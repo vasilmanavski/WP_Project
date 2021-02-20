@@ -1,5 +1,6 @@
 package com.churchevents.model;
 
+import com.churchevents.model.enums.Role;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -9,7 +10,7 @@ import java.util.List;
 @Entity
 @Table(name = "email_users")
 
-public class User {
+public class User{
     @Id
     private String email;
 
@@ -19,6 +20,9 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Post> posts;
+
+    @Enumerated(value = EnumType.STRING)
+    private Role role;
 
     public User(String email, String password, boolean isSubscribed) {
         this.email = email;
