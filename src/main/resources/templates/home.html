@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<div>
+    <ul class="nav navbar-nav navbar-right">
+
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="nav-link" href="#">
+                <th:block th:if="${#request.getRemoteUser() != null}"
+                          th:text="${#request.getRemoteUser()}"></th:block>
+            </a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+            <a class="btn btn-light btn-sm ml-3" href="/logout">
+                <i class="fa fa-shopping-cart"></i> Logout
+            </a>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+            <a class="btn btn-light btn-sm ml-3" href="/login">
+                <i class="fa fa-shopping-cart"></i> Login
+            </a>
+        </li>
+    </ul>
+
+</div>
+
+<h1>Login is okay</h1>
+</body>
+</html>

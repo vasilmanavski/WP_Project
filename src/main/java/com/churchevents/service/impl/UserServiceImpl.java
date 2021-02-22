@@ -24,6 +24,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return this.userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+    }
+
+    @Override
     public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
 
         if (email==null || email.isEmpty()  || password==null || password.isEmpty())
@@ -34,10 +39,5 @@ public class UserServiceImpl implements UserService {
               throw new EmailAlreadyExistsException(email);
         User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
         return userRepository.save(user);
-    }
-
-    @Override
-    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
-        return this.userRepository.findByEmail(s).orElseThrow(() -> new UsernameNotFoundException(s));
     }
 }
