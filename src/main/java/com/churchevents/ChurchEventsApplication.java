@@ -12,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.Properties;
 
 @SpringBootApplication
-@EnableScheduling
 public class ChurchEventsApplication {
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -24,6 +25,9 @@
             <a class="btn btn-light btn-sm ml-3" href="/login">
                 <i class="fa fa-shopping-cart"></i> Login
             </a>
+        </li>
+        <li sec:authorize="hasRole('ROLE_ADMIN')">
+            <a href="/User/Roles">Change roles</a>
         </li>
     </ul>
 

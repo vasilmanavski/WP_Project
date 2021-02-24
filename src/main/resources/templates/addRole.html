@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>Add roles</h1>
+    <form th:action="@{/user/Roles}"  th:method="POST">
+        <label for='email'>Email:</label><input id='email' type='text' name='email'/>
+        <label >Name</label>:
+        <select name="role">
+            <option th:each="role: ${roles}"><th:block th:text="${role.name()}" th:value="${role.name()}"/></option>
+        </select>
+
+        <input type='submit' value='Submit'/>
+    </form>
+
+</body>
+</html>

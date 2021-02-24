@@ -14,11 +14,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -50,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void timerForVerification(String email) {
-        CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS).execute(() -> {
+        CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
 
             User user = this.userRepository.findByEmail(email)
                     .orElseThrow(() -> new UsernameNotFoundException(email));
@@ -76,6 +77,7 @@ public class UserServiceImpl implements UserService {
         User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
         return userRepository.save(user);
     }
+
 
 
 }

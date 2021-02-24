@@ -20,11 +20,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User login(String email, String password) {
         if (email == null || email.isEmpty() ||
-                password==null || password.isEmpty()) {
+                password == null || password.isEmpty()) {
             throw new InvalidArgumentsException();
         }
 
         return userRepository.findByEmailAndPassword(email, password)
                 .orElseThrow(InvalidUserCredentialsException::new);
     }
+
 }
+
+

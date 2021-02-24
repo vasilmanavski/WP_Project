@@ -1,6 +1,8 @@
 package com.churchevents.web;
 
 import com.churchevents.model.User;
+import com.churchevents.model.exceptions.EmailAlreadyExistsException;
+import com.churchevents.model.exceptions.EmailNotVerifiedException;
 import com.churchevents.model.exceptions.InvalidUserCredentialsException;
 import com.churchevents.service.AuthService;
 import org.springframework.stereotype.Controller;
@@ -35,7 +37,7 @@ public class LoginController {
             request.getSession().setAttribute("user", user);
             return "redirect:/home";
         }
-        catch (InvalidUserCredentialsException exception) {
+        catch (InvalidUserCredentialsException | EmailAlreadyExistsException | EmailNotVerifiedException exception) {
             model.addAttribute("hasError", true);
             model.addAttribute("error", exception.getMessage());
             return "login";
