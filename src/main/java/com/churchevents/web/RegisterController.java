@@ -56,7 +56,7 @@ public class RegisterController {
 
             SimpleMailMessage mailMessage = this.emailSenderService.formEmail(user);
             this.emailSenderService.sendEmail(mailMessage);
-            this.userService.timerForVerification(user);
+            this.userService.timerForVerification(email);
 
             model.addAttribute("email", user.getEmail());
             return "successfulRegistration";

@@ -49,11 +49,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void timerForVerification(User user) {
-        CompletableFuture.delayedExecutor(600, TimeUnit.SECONDS).execute(() -> {
+    public void timerForVerification(String email) {
+        CompletableFuture.delayedExecutor(30, TimeUnit.SECONDS).execute(() -> {
+
+            User user = this.userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException(email));
+
+            ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
+            this.confirmationTokenRepository.delete(confirmationToken);
+
             if(!user.isEnabled()){
-                ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
-                this.confirmationTokenRepository.delete(confirmationToken);
                 this.userRepository.delete(user);
             }
         });

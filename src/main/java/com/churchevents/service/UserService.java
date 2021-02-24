@@ -16,5 +16,5 @@ public interface UserService extends UserDetailsService {
 
     Optional<User> findByEmail(String email);
     void save(User user);
-    void timerForVerification(User user);
+    void timerForVerification(String email);
 }
