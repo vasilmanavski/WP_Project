@@ -1,6 +1,5 @@
 package com.churchevents.service;
 
-
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Role;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,8 +20,6 @@ public interface UserService extends UserDetailsService {
     void save(User user);
 
     void timerForVerification(String email);
-    List<User> listAllUsers();
 
 
 }
-

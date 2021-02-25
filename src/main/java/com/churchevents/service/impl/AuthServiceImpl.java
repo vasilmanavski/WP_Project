@@ -24,7 +24,13 @@ public class AuthServiceImpl implements AuthService {
                 password == null || password.isEmpty()) {
             throw new InvalidArgumentsException();
         }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(InvalidEmailOrPasswordException::new);
 
+        if(!user.isEnabled()) {
+            throw new EmailNotVerifiedException();
+
+        }
         return userRepository.findByEmailAndPassword(email, password)
                 .orElseThrow(InvalidUserCredentialsException::new);
     }

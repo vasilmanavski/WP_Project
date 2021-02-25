@@ -1,9 +1,7 @@
 package com.churchevents.service.impl;
 
-
 import com.churchevents.model.enums.Role;
 import com.churchevents.model.exceptions.EmailAlreadyExistsException;
-import com.churchevents.model.exceptions.EmailNotVerifiedException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.PasswordsDoNotMatchException;
 import com.churchevents.model.tokens.ConfirmationToken;
@@ -13,12 +11,10 @@ import com.churchevents.service.UserService;
 import com.churchevents.model.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -70,11 +66,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> listAllUsers() {
-        return userRepository.findAll();
-    }
-
-    @Override
     public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
 
         if (email==null || email.isEmpty()  || password==null || password.isEmpty())
@@ -86,7 +77,6 @@ public class UserServiceImpl implements UserService {
         User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
         return userRepository.save(user);
     }
-
 
 
 
