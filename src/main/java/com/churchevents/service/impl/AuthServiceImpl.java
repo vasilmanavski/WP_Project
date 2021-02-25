@@ -1,6 +1,7 @@
 package com.churchevents.service.impl;
 
 import com.churchevents.model.User;
+import com.churchevents.model.exceptions.EmailNotVerifiedException;
 import com.churchevents.model.exceptions.InvalidArgumentsException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.InvalidUserCredentialsException;
@@ -23,7 +24,13 @@ public class AuthServiceImpl implements AuthService {
                 password == null || password.isEmpty()) {
             throw new InvalidArgumentsException();
         }
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(InvalidEmailOrPasswordException::new);
 
+        if(!user.isEnabled()) {
+            throw new EmailNotVerifiedException();
+
+        }
         return userRepository.findByEmailAndPassword(email, password)
                 .orElseThrow(InvalidUserCredentialsException::new);
     }
