@@ -3,6 +3,7 @@ package com.churchevents.service.impl;
 
 import com.churchevents.model.enums.Role;
 import com.churchevents.model.exceptions.EmailAlreadyExistsException;
+import com.churchevents.model.exceptions.EmailNotVerifiedException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.PasswordsDoNotMatchException;
 import com.churchevents.model.tokens.ConfirmationToken;
@@ -66,6 +67,11 @@ public class UserServiceImpl implements UserService {
                 this.userRepository.delete(user);
             }
         });
+    }
+
+    @Override
+    public List<User> listAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override

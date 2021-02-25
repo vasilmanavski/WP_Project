@@ -110,7 +110,7 @@ public class PostsController {
         List<User> users = userService.listAllUsers();
         Rating [] ratings = Rating.values();
         Post post = this.postService.findById(id);
-        User user = this.userService.findByEmail(email);
+        User user = this.userService.findByEmail(email).get();
         model.addAttribute("user",users);
         model.addAttribute("rating",ratings);
         this.reviewService.create(rating,user,post);
