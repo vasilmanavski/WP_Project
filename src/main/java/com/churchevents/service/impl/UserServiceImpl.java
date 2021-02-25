@@ -1,39 +1,87 @@
 package com.churchevents.service.impl;
 
-import com.churchevents.model.User;
+
+import com.churchevents.model.enums.Role;
+import com.churchevents.model.exceptions.EmailAlreadyExistsException;
+import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
+import com.churchevents.model.exceptions.PasswordsDoNotMatchException;
+import com.churchevents.model.tokens.ConfirmationToken;
+import com.churchevents.repository.ConfirmationTokenRepository;
 import com.churchevents.repository.UserRepository;
 import com.churchevents.service.UserService;
+import com.churchevents.model.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 @Service
 public class UserServiceImpl implements UserService {
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+    private ConfirmationTokenRepository confirmationTokenRepository;
+
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, ConfirmationTokenRepository confirmationTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-    }
-
-
-    @Override
-    public User create(String username, String password, boolean isSubscribed) {
-        String encrypedPassword = this.passwordEncoder.encode(password);
-        User user = new User(username,encrypedPassword,isSubscribed);
-        return this.userRepository.save(user);
+        this.confirmationTokenRepository = confirmationTokenRepository;
     }
 
     @Override
-    public User findByEmail(String email) {
-         return this.userRepository.findByEmail(email);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        return this.userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
     }
 
     @Override
-    public List<User> listAllUsers() {
-        return this.userRepository.findAll();
+    public Optional<User> findByEmail(String email) {
+        return this.userRepository.findByEmail(email);
     }
+
+    @Override
+    public void save(User user) {
+        this.userRepository.save(user);
+    }
+
+    @Override
+    public void timerForVerification(String email) {
+        CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
+
+            User user = this.userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException(email));
+
+            ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
+            this.confirmationTokenRepository.delete(confirmationToken);
+
+            if(!user.isEnabled()){
+                this.userRepository.delete(user);
+            }
+        });
+    }
+
+    @Override
+    public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
+
+        if (email==null || email.isEmpty()  || password==null || password.isEmpty())
+              throw new InvalidEmailOrPasswordException();
+        if (!password.equals(repeatPassword))
+              throw new PasswordsDoNotMatchException();
+        if(this.userRepository.findByEmail(email).isPresent())
+              throw new EmailAlreadyExistsException(email);
+        User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
+        return userRepository.save(user);
+    }
+
+
+
 
 }
