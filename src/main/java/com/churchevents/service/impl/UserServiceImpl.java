@@ -66,6 +66,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> listAllUsers() {
+        return userRepository.findAll();
+    }
+
+    @Override
     public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
 
         if (email==null || email.isEmpty()  || password==null || password.isEmpty())

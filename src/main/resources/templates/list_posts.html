@@ -1,0 +1,161 @@
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Products</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+        <meta charset='utf-8' />
+        <link href='fullcalendar.css' rel='stylesheet' />
+        <link href='fullcalendar.print.css' rel='stylesheet' />
+        <script type="text/javascript" src='fullcalendar.js'></script>
+        <script type="text/javascript" src='jquery-1.10.2.js'></script>
+         <script type="text/javascript" src='jquery-ui.custom.min.js'></script>
+  
+        <script>
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth'
+                });
+                calendar.render();
+            });
+
+        </script>
+</head>
+
+<body>
+<header xmlns:th="http://www.thymeleaf.org">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Markus Kirche</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+                    aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse justify-content-end" id="navbarsExampleDefault">
+
+
+
+                <form class="form-inline my-2 my-lg-0">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" aria-label="Small"
+                               aria-describedby="inputGroup-sizing-sm"
+                               placeholder="Search...">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary btn-number">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+
+                    <li class="nav-item" >
+                        <a class="nav-link" href="#">
+                            <th:block th:if="${#request.getRemoteUser() != null}"
+                                      th:text="${#request.getRemoteUser()}"></th:block>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" >
+                        <a class="btn btn-light btn-sm ml-3" href="/logout">
+                            <i class="fa fa-shopping-cart"></i> Logout
+                        </a>
+                    </li>
+                    <li class="nav-item" >
+                        <a class="btn btn-light btn-sm ml-3" href="/login">
+                            <i class="fa fa-shopping-cart"></i> Login
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</header>
+<div>
+    <p>Donate for church:</p>
+    <form method="POST" th:action="@{'/checkout'}"
+    >
+        <input type="number" name="amount">
+        <button class="btn btn-secondary btn-number" type="submit" >Confirm</button>
+    </form>
+</div>
+<div>
+    <!-- The form below should invoke the method ProductsController.showProducts -->
+    <a href="/posts/add" class="add-item" >
+        Add new post
+    </a>
+
+
+    <div class="item" th:each="post: ${posts}">
+       <div class="row">
+
+             <div class="col-6 border" >
+                 <img th:src="${post.getBase64Image()}"/>
+
+                 <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}"
+                 >
+
+                         <label >User</label><br/>
+
+
+                         <input  type="radio" id="email" name="email" th:each="user:${user}" th:value="${user.email}" th:text="${user.email}">
+
+
+                     <div>
+                         <label>Rate post</label><br/>
+
+                         <!-- For each category you should have one <option> like below  -->
+                         <input  type="radio" id="rating" name="rating" th:each="rate:${rating}" th:value="${rate.name}" th:text="${rate.name}">
+
+                     </div>
+
+
+
+                     <button type="submit" >Review</button>
+
+                 </form>
+
+               </div>
+
+
+
+
+           <div class="col-6 border">
+               <p th:text="${post.title}"></p>
+               <br />
+               <p th:text="${post.shortDescription}"></p>
+               <br />
+               <p th:text="${post.dateOfEvent}"></p>
+               <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}"
+               >
+                   <button type="submit" class="delete-item">Delete</button>
+               </form>
+               <!-- ProductsController.showEdit -->
+               <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item"
+               >Edit </a>
+
+               <a th:href="@{'/posts/{id}/readMore' (id=${post.id})}" >Read More</a>
+           </div>
+
+       </div>
+
+          </div>
+
+    </div>
+
+<div id="calendar">
+
+</div>
+
+</div>
+
+
+</body>
+</html>

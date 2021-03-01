@@ -35,7 +35,7 @@ public class LoginController {
             user = this.authService.login(request.getParameter("username"),
                     request.getParameter("password"));
             request.getSession().setAttribute("user", user);
-            return "redirect:/home";
+            return "redirect:/";
         }
         catch (InvalidUserCredentialsException | EmailAlreadyExistsException | EmailNotVerifiedException exception) {
             model.addAttribute("hasError", true);

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns='http://www.w3.org/1999/xhtml' xmlns:th='http://www.thymeleaf.org'>
+<head>
+    <title>Checkout</title>
+    <style>
+        body {
+            font-family: 'arial';
+        }
+        #checkout-form input,
+        #checkout-form button {
+            display: block;
+            margin: 12px;
+        }
+    </style>
+</head>
+<body>
+<form action='/charge' method='POST' id='checkout-form'>
+
+    <input type='hidden' th:value='${amount}' name='amount' />
+    <label>Donate:<span th:text='${amount/100}' />€</label>
+
+    <script
+            src='https://checkout.stripe.com/checkout.js'
+            class='stripe-button'
+            th:attr='data-key=${stripePublicKey},
+                         data-amount=${amount},
+                         data-currency=${currency}'
+
+
+            data-key="pk_test_51IP9Z6E0IcH9jGcDOc1GXOSjFKr0T0XafFObXOYyCps8kUg3Cpi2A1ajb3cyWB82MZmzYITSVJP0G6dAu0P8D0Ec00jlDh04aL"
+            data-name="Marcus Kirche"
+            data-description="Donations for church"
+
+            data-label="Pay with card"
+            data-email="marcus_kirche@hotmail.com">
+
+    </script>
+</form>
+</body>
+</html>
