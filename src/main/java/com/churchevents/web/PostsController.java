@@ -12,6 +12,7 @@ import com.churchevents.service.UserService;
 import javassist.bytecode.ByteArray;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -110,7 +111,7 @@ public class PostsController {
         List<User> users = userService.listAllUsers();
         Rating [] ratings = Rating.values();
         Post post = this.postService.findById(id);
-        User user = this.userService.findByEmail(email);
+        User user = this.userService.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
         model.addAttribute("user",users);
         model.addAttribute("rating",ratings);
         this.reviewService.create(rating,user,post);
