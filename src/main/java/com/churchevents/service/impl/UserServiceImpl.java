@@ -1,5 +1,6 @@
 package com.churchevents.service.impl;
 
+
 import com.churchevents.model.enums.Role;
 import com.churchevents.model.exceptions.EmailAlreadyExistsException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
@@ -13,13 +14,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -59,7 +57,7 @@ public class UserServiceImpl implements UserService {
             ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
             this.confirmationTokenRepository.delete(confirmationToken);
 
-            if(!user.isEnabled()){
+            if (!user.isEnabled()) {
                 this.userRepository.delete(user);
             }
         });
@@ -68,16 +66,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
 
-        if (email==null || email.isEmpty()  || password==null || password.isEmpty())
-              throw new InvalidEmailOrPasswordException();
+        if (email == null || email.isEmpty() || password == null || password.isEmpty())
+            throw new InvalidEmailOrPasswordException();
         if (!password.equals(repeatPassword))
-              throw new PasswordsDoNotMatchException();
-        if(this.userRepository.findByEmail(email).isPresent())
-              throw new EmailAlreadyExistsException(email);
-        User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
+            throw new PasswordsDoNotMatchException();
+        if (this.userRepository.findByEmail(email).isPresent())
+            throw new EmailAlreadyExistsException(email);
+        User user = new User(email, passwordEncoder.encode(password), isSubscribed, role);
         return userRepository.save(user);
     }
 
-
+    @Override
+    public List<User> listAllUsers() {
+        return this.userRepository.findAll();
+    }
 
 }
