@@ -47,7 +47,8 @@ public class PostsController {
         model.addAttribute("rating",ratings);
         model.addAttribute("posts",posts);
         model.addAttribute("user",users);
-        return "list_posts.html";
+        model.addAttribute("bodyContent", "list_posts");
+        return "master-template";
 
     }
 
@@ -70,8 +71,9 @@ public class PostsController {
         Post post = this.postService.findById(id);
 
         model.addAttribute("post",post);
+        model.addAttribute("bodyContent", "posts_form");
 
-        return "posts_form.html";
+        return "master-template";
     }
     @PostMapping("/posts")
     public String create(@RequestParam String title,

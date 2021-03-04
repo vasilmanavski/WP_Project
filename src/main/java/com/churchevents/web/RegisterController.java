@@ -36,7 +36,8 @@ public class RegisterController {
             model.addAttribute("error", error);
         }
 
-        return "register";
+        model.addAttribute("bodyContent", "register");
+        return "master-template";
     }
 
     @PostMapping(value = "/register")
@@ -59,7 +60,8 @@ public class RegisterController {
             this.userService.timerForVerification(email);
 
             model.addAttribute("email", user.getEmail());
-            return "successfulRegistration";
+            model.addAttribute("bodyContent", "successfulRegistration");
+            return "master-template";
 
         } catch(InvalidEmailOrPasswordException | PasswordsDoNotMatchException exception) {
             return "redirect:/register?error=" + exception.getMessage();
@@ -80,7 +82,8 @@ public class RegisterController {
                     .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
             user.setEnabled(true);
             userService.save(user);
-            return "accountVerified";
+            model.addAttribute("bodyContent", "accountVerified");
+            return "master-template";
         }
     }
 }
