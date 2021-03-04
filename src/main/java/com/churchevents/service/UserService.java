@@ -21,5 +21,6 @@ public interface UserService extends UserDetailsService {
 
     void timerForVerification(String email);
 
+    List<User> allUsers();
 
 }

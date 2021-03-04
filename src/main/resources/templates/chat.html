@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<div>
+    <h2>All users</h2>
+    <div>
+        <div th:each="user : ${allUsers}">
+            <th:block th:text="${user}"></th:block>
+        </div>
+    </div>
+
+    <button id="send">Send message</button>
+
+    <br/>
+
+    <span th:text ="${#authentication.getPrincipal().getEmail()}"></span>
+
+    <button id="smth">Check</button>
+</div>
+
+<script th:inline="javascript">
+    let stompClient = null;
+
+    // function connect() {
+    //     var socket = new SockJS("http://localhost:8080/ws");
+    //     stompClient = Stomp.over(socket);
+    //     stompClient.connect({}, function (frame) {
+    //         console.log(frame);
+    //     });
+    //     // stompClient.connect({}, function (frame) {
+    //     //     console.log('Connected: ' + frame);
+    //     // });
+    // }
+
+    const connect = () => {
+        let sockjs = new SockJS("http://localhost:8080/ws");
+        stompClient = Stomp.over(sockjs);
+        stompClient.connect({}, onConnected, onError);
+    };
+
+    const onConnected = () => {
+        console.log("connected");
+        let currentUser = [[${#authentication.getPrincipal().getEmail()}]];
+
+        stompClient.subscribe(
+            "/user/" + currentUser + "/queue/messages",
+            onMessageReceived
+        );
+    };
+
+    const onMessageReceived = (msg) => {
+        console.log(msg);
+    };
+
+    const sendMessage = () => {
+        const message = {
+            content: "Hello world from javascript!",
+            //timestamp: new Date()
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(message));
+    };
+
+    const onError = (err) => {
+        console.log(err);
+    };
+
+    $(document).ready(function () {
+        connect();
+        //console.log("Before sending message!");
+
+        $("#send").click(function () {
+            sendMessage();
+        });
+    });
+</script>
+</body>
+</html>
