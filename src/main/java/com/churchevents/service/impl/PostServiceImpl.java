@@ -9,6 +9,7 @@ import javassist.bytecode.ByteArray;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Blob;
 import java.util.Base64;
@@ -34,6 +35,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public Post create(String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
         Post post = new Post();
         if (image != null) {
@@ -47,6 +49,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public Post update(Long id, String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
         Post post = this.findById(id);
         post.setTitle(title);
@@ -63,13 +66,18 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    @Transactional
     public Post delete(Long id) {
         Post post = this.findById(id);
         this.postRepository.delete(post);
         return post;
     }
 
-
+    @Override
+    public Post findByTitle(String title) {
+        return this.postRepository.findByTitle(title)
+                .orElseThrow(InvalidPostIdException::new);
+    }
 
 
 }

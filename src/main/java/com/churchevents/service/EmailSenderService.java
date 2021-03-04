@@ -2,11 +2,12 @@ package com.churchevents.service;
 
 import com.churchevents.model.User;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Async;
+
+import javax.mail.MessagingException;
 
 public interface EmailSenderService {
 
     void sendEmail(SimpleMailMessage email);
-    SimpleMailMessage formEmail(User user);
+    SimpleMailMessage formRegistrationEmail(User user);
+    void formRegistrationEmailForSubscription(String email) throws MessagingException;
 }

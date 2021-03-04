@@ -1,17 +1,12 @@
 package com.churchevents.web;
 
 import com.churchevents.model.Post;
-import com.churchevents.model.Review;
+import com.churchevents.model.Subscriber;
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Rating;
 import com.churchevents.model.enums.Type;
-import com.churchevents.service.PostService;
-import com.churchevents.service.ReviewService;
-import com.churchevents.service.UserService;
+import com.churchevents.service.*;
 
-import javassist.bytecode.ByteArray;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,13 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
+import javax.mail.MessagingException;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
@@ -38,11 +28,15 @@ public class PostsController {
     private final PostService postService;
     private final UserService userService;
     private final ReviewService reviewService;
+    private final EmailSenderService emailSenderService;
+    private final SubscribersService subscribersService;
 
-    public PostsController(PostService postService, UserService userService, ReviewService reviewService){
+    public PostsController(PostService postService, UserService userService, ReviewService reviewService, EmailSenderService emailSenderService, SubscribersService subscribersService){
         this.postService = postService;
         this.userService = userService;
         this.reviewService = reviewService;
+        this.emailSenderService = emailSenderService;
+        this.subscribersService = subscribersService;
     }
 
     @GetMapping({"/","/posts"})
@@ -84,10 +78,10 @@ public class PostsController {
                          @RequestParam String description,
                          @RequestParam MultipartFile image,
                          @RequestParam Type type,
-                         @RequestParam Date dateOfEvent) throws IOException, SQLException {
+                         @RequestParam Date dateOfEvent) throws IOException, SQLException, MessagingException {
 
        this.postService.create(title,description,image,type,dateOfEvent);
-        return "redirect:/posts";
+       return "redirect:/posts";
     }
 
     @PostMapping("/posts/{id}")
@@ -99,6 +93,8 @@ public class PostsController {
                          @RequestParam Date dateOfEvent) throws IOException {
 
         this.postService.update(id,title,description,image,type,dateOfEvent);
+
+
         return "redirect:/posts";
     }
 

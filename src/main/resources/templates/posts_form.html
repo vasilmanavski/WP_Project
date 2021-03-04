@@ -59,7 +59,6 @@
         </div>
     </nav>
 </header>
-<body>
 <!-- The form should submit to ProductsController.create or  ProductsController.update, depending on whether we are
 creating or editing a product -->
 <form method="post"  enctype="multipart/form-data" th:action="@{'/posts/{id}' (id=${post?.id})}">
@@ -87,16 +86,6 @@ creating or editing a product -->
 
 
     </div>
-  <!--
-    <div>
-        <label for="type">Type</label>
-        <input type="text"
-               id="type"
-               name="type"
-               th:value="${post?.type}"
-               required>
-    </div>
- -->
     <div>
         <label>Type</label><br/>
 
@@ -118,6 +107,6 @@ creating or editing a product -->
     <button id="submit" type="submit">Submit</button>
     <a id="back" href="/posts" type="button" class="btn btn-primary">Back to posts</a>
 
-</form>
-</body>
+        </form>
+    </body>
 </html>

@@ -22,5 +22,5 @@ public interface PostService {
     Post delete(Long id);
 
 
-
+    Post findByTitle(String title);
 }
