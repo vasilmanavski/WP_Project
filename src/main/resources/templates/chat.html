@@ -7,27 +7,65 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <style>
+        .users {
+            border: 1px black solid;
+            margin: 2px auto;
+        }
+
+        .users:hover {
+            background-color: darkgrey;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div>
-    <h2>All users</h2>
-    <div>
-        <div th:each="user : ${allUsers}">
-            <th:block th:text="${user}"></th:block>
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <h2>All users</h2>
+            <div>
+                <div th:each="user : ${allUsers}" class="users">
+                    <th:block th:text="${user}"></th:block>
+                </div>
+            </div>
+        </div>
+        <div class="col-8">
+
         </div>
     </div>
 
-    <button id="send">Send message</button>
+    <div class="row">
+        <div class="col-8 offset-4">
+            <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
+            <button id="send">Send message</button>
+        </div>
+    </div>
 
     <br/>
+    <hr/>
 
     <span th:text ="${#authentication.getPrincipal().getEmail()}"></span>
-
-    <button id="smth">Check</button>
 </div>
 
 <script th:inline="javascript">
+
     let stompClient = null;
+    let activeUser = null;
+    let activeUserDiv = null;
+    const currentUser = [[${#authentication.getPrincipal().getEmail()}]];
 
     // function connect() {
     //     var socket = new SockJS("http://localhost:8080/ws");
@@ -48,7 +86,7 @@
 
     const onConnected = () => {
         console.log("connected");
-        let currentUser = [[${#authentication.getPrincipal().getEmail()}]];
+        //let currentUser = [[${#authentication.getPrincipal().getEmail()}]];
 
         stompClient.subscribe(
             "/user/" + currentUser + "/queue/messages",
@@ -60,10 +98,12 @@
         console.log(msg);
     };
 
-    const sendMessage = () => {
+    const sendMessage = (userInput) => {
         const message = {
-            content: "Hello world from javascript!",
-            //timestamp: new Date()
+            senderId: currentUser,
+            recipientId: activeUser,
+            content: userInput,
+            timestamp: new Date()
         };
         stompClient.send("/app/chat", {}, JSON.stringify(message));
     };
@@ -77,7 +117,26 @@
         //console.log("Before sending message!");
 
         $("#send").click(function () {
-            sendMessage();
+            let userInput = $("#user_input").val().trim();
+            if (userInput == '') {
+                console.log("Cannot send empty message.");
+                return;
+            }
+            if (activeUser == null) {
+                console.log("Active user is null.")
+                return;
+            }
+            $("#user_input").val("");
+            sendMessage(userInput);
+        });
+
+        $(".users").click(function () {
+            if (activeUserDiv != null) {
+                activeUserDiv.css("background-color", "transparent");
+            }
+            activeUserDiv = $(this);
+            activeUserDiv.css("background-color", "#F0F0F0");
+            activeUser = $(this).text().trim();
         });
     });
 </script>

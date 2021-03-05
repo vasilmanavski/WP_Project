@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> allUsers() {
-        return this.userRepository.findAll();
+    public List<String> allUserEmails() {
+        return this.userRepository.findAll().stream().map(User::getEmail).collect(Collectors.toList());
     }
 }
