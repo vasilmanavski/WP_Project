@@ -2,17 +2,16 @@ package com.churchevents.web;
 
 import com.churchevents.model.ChatMessage;
 import com.churchevents.model.ChatMessagePayload;
-import com.churchevents.model.User;
 import com.churchevents.service.ChatMessageService;
 import com.churchevents.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class ChatController {
@@ -42,5 +41,12 @@ public class ChatController {
     public String getChats(Model model) {
         model.addAttribute("allUsers", this.userService.allUserEmails());
         return "chat";
+    }
+
+    @GetMapping("/messages/{senderId}/{recipientId}")
+    public ResponseEntity<?> findChatMessages(@PathVariable String senderId,
+                                              @PathVariable String recipientId) {
+        return ResponseEntity
+                .ok(this.chatMessageService.findChatMessages(senderId, recipientId));
     }
 }
