@@ -52,7 +52,6 @@
         <div class="container">
             <div class="intro">
                 <h2 class="text-center newsletter">Subscribe to our Newsletter</h2>
-                <p class="text-center">Subscribe and get emails for news and events</p>
             </div>
             <form method="POST" th:action='@{/subscribers/save}' class="form-inline">
                 <div class="form-group">
@@ -62,9 +61,31 @@
                     <button class="btn btn-primary" type="submit">Subscribe </button>
                 </div>
             </form>
-            <div th:if="${subscriberEmailError == true}">
-                <h1 th:text="Email is already subscribed"></h1>
-                </div>
+            <div th:if="${subscriberEmailError}">
+                <h1>Looks like you are already subscribed</h1>
+            </div>
+
+            <div th:if="${email}">
+                <h1>Thank you for subscribing</h1>
+            </div>
             </div>
         </div>
+
+        <br />
+
+        <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
+            <input type="file" name="file"/>
+                <br/>
+                <br/>
+
+            <button type="submit">Submit</button>
+        </form>
+        <hr/>
+        <div th:if="${message}">
+            <h2 th:text="${message}"/>
+        </div>
+        <hr />
+        <a th:href="@{'/getPDF'}">Gemeindebrief</a>
+
+
 </div>

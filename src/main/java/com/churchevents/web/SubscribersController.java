@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.mail.MessagingException;
 import java.util.List;
@@ -30,18 +31,22 @@ public class SubscribersController {
     }
 
     @PostMapping("/save")
-    public String save(Model model,
+    public String save(RedirectAttributes redirectAttributes,
                        @RequestParam String email){
 
         try {
+
             this.subscribersService.save(email);
             this.emailSenderService.formRegistrationEmailForSubscription(email);
+            redirectAttributes.addFlashAttribute("email", email);
+
         }
         catch (EmailAlreadyExistsException | InvalidEmailOrPasswordException | MessagingException exception) {
-            model.addAttribute("subscriberEmailError", true);
-            model.addAttribute("email", email);
+            redirectAttributes.addFlashAttribute("subscriberEmailError", true);
         }
 
         return "redirect:/posts";
     }
+
+
 }
