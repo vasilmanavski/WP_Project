@@ -13,11 +13,24 @@ public class Subscriber {
     @Id
     private String email;
 
-    public Subscriber(String email) {
+    private Boolean isEnabled = false;
+
+
+    public Subscriber(String email, Boolean isEnabled) {
         this.email = email;
+        this.isEnabled = isEnabled;
     }
 
     public Subscriber() {
 
     }
+
+//
+//    public Boolean isEnabled() {
+//        return isEnabled;
+//    }
+//
+//    public void setIsEnabled(Boolean isEnabled){
+//        this.isEnabled = isEnabled;
+//    }
 }

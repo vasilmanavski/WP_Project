@@ -13,6 +13,6 @@ import java.util.Optional;
 public interface SubscribersRepository extends JpaRepository<Subscriber, String> {
 
     boolean existsByEmail(String email);
-
+    Optional<Subscriber> findByEmail(String email);
 
 }

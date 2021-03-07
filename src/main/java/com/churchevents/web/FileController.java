@@ -55,12 +55,6 @@ public class FileController {
         return "redirect:/posts";
     }
 
-    @GetMapping("/getPdf")
-    public File getPdf(){
-        File file = new File("src/main/resources/templates/pdf/Newsletter.pdf");
-        return file;
-    }
-
     @RequestMapping(value = "/getPDF", method = RequestMethod.GET)
     public ResponseEntity<byte[]> getPDF() throws IOException {
         HttpHeaders headers = new HttpHeaders();
