@@ -7,6 +7,8 @@ import com.churchevents.model.exceptions.InvalidArgumentsException;
 import com.churchevents.repository.ChatMessageRepository;
 import com.churchevents.repository.UserRepository;
 import com.churchevents.service.ChatMessageService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
@@ -43,5 +45,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         return Stream.concat(sentMessages.stream(), receivedMessages.stream())
                 .sorted(Comparator.comparing(ChatMessage::getTimestamp).reversed())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Slice<ChatMessage> findChatMessagesWithPagination(String senderId, String recipientId, Pageable pageable) {
+        User sender = this.userRepository.findById(senderId).orElseThrow();
+        User recipient = this.userRepository.findById(recipientId).orElseThrow();
+        Slice<ChatMessage> chatMessages = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageable);
+//        chatMessages.map(chatMessage -> new ChatMessagePayload(
+//                chatMessage.getSender().getEmail(), chatMessage.getRecipient().getEmail(),
+//                chatMessage.getContent(), chatMessage.getTimestamp()));
+        return chatMessages;
     }
 }

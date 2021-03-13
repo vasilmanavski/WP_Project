@@ -4,6 +4,7 @@ import com.churchevents.model.ChatMessage;
 import com.churchevents.model.ChatMessagePayload;
 import com.churchevents.service.ChatMessageService;
 import com.churchevents.service.UserService;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -48,5 +49,13 @@ public class ChatController {
                                               @PathVariable String recipientId) {
         return ResponseEntity
                 .ok(this.chatMessageService.findChatMessages(senderId, recipientId));
+    }
+
+    @GetMapping("/messages/{senderId}/{recipientId}/paginated")
+    public ResponseEntity<?> findChatMessagesPaginated(@PathVariable String senderId,
+                                                       @PathVariable String recipientId,
+                                                       Pageable pageable) {
+        return ResponseEntity
+                .ok(this.chatMessageService.findChatMessagesWithPagination(senderId, recipientId, pageable).getContent());
     }
 }
