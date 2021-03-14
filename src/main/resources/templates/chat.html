@@ -90,17 +90,6 @@
     const sort = "timestamp,desc";
     let hasMoreMessages = true;
 
-    // function connect() {
-    //     var socket = new SockJS("http://localhost:8080/ws");
-    //     stompClient = Stomp.over(socket);
-    //     stompClient.connect({}, function (frame) {
-    //         console.log(frame);
-    //     });
-    //     // stompClient.connect({}, function (frame) {
-    //     //     console.log('Connected: ' + frame);
-    //     // });
-    // }
-
     const connect = () => {
         let sockjs = new SockJS("http://localhost:8080/ws");
         stompClient = Stomp.over(sockjs);
@@ -109,8 +98,6 @@
 
     const onConnected = () => {
         console.log("connected");
-        //let currentUser = [[${#authentication.getPrincipal().getEmail()}]];
-
         stompClient.subscribe(
             "/user/" + currentUser + "/queue/messages",
             onMessageReceived
@@ -119,12 +106,10 @@
 
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
-        //console.log(newMessage);
-        if (newMessage.sender.email === activeUser) {
+        if (newMessage.senderId === activeUser) {
             $("#messagediv").append(`<div>${newMessage.content}</div>`);
             $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
         }
-        //console.log(msg);
     };
 
     const sendMessage = (userInput) => {
@@ -142,25 +127,10 @@
     };
 
     const loadMessages = () => {
-        $("#messagediv").empty();
-        $.ajax({url: `/messages/${currentUser}/${activeUser}`, success: function (result) {
-            result.forEach(function (message) {
-                console.log(message.sender.email, message.recipient.email);
-
-                if (message.sender.email === currentUser) {
-                    $("#messagediv").prepend(`<div class="sent-messages">${message.content}</div>`);
-                } else {
-                    $("#messagediv").prepend(`<div>${message.content}</div>`);
-                }
-            });
-        }});
-    }
-
-    const loadMessagesPagination = () => {
         if (page === 0) {
             $("#messagediv").empty();
         }
-        $.ajax({url: `/messages/${currentUser}/${activeUser}/paginated?page=${page}&size=${size}&sort=${sort}`, success: function (result) {
+        $.ajax({url: `/messages/${currentUser}/${activeUser}?page=${page}&size=${size}&sort=${sort}`, success: function (result) {
             console.log(result.length);
 
             if (result.length < size) {
@@ -171,10 +141,7 @@
             }
 
             result.forEach(function (message) {
-
-                //console.log(message.sender.email, message.recipient.email);
-
-                if (message.sender.email === currentUser) {
+                if (message.senderId === currentUser) {
                     $("#messagediv").prepend(`<div class="sent-messages">${message.content}</div>`);
                 } else {
                     $("#messagediv").prepend(`<div>${message.content}</div>`);
@@ -185,7 +152,6 @@
 
     $(document).ready(function () {
         connect();
-        //console.log("Before sending message!");
 
         $("#send").click(function () {
             let userInput = $("#user_input").val().trim();
@@ -217,14 +183,13 @@
             activeUserDiv = $(this);
             activeUserDiv.css("background-color", "#F0F0F0");
             activeUser = activeUserDiv.text().trim();
-            //loadMessages();
-            loadMessagesPagination();
+            loadMessages();
         });
 
         $("#load_more").click(function () {
             if (activeUserDiv != null && hasMoreMessages) {
                 page++;
-                loadMessagesPagination();
+                loadMessages();
             }
         });
     });

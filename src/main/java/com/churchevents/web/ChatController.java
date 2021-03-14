@@ -46,16 +46,9 @@ public class ChatController {
 
     @GetMapping("/messages/{senderId}/{recipientId}")
     public ResponseEntity<?> findChatMessages(@PathVariable String senderId,
-                                              @PathVariable String recipientId) {
-        return ResponseEntity
-                .ok(this.chatMessageService.findChatMessages(senderId, recipientId));
-    }
-
-    @GetMapping("/messages/{senderId}/{recipientId}/paginated")
-    public ResponseEntity<?> findChatMessagesPaginated(@PathVariable String senderId,
                                                        @PathVariable String recipientId,
                                                        Pageable pageable) {
         return ResponseEntity
-                .ok(this.chatMessageService.findChatMessagesWithPagination(senderId, recipientId, pageable).getContent());
+                .ok(this.chatMessageService.findChatMessages(senderId, recipientId, pageable).getContent());
     }
 }
