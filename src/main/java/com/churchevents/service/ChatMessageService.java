@@ -7,7 +7,11 @@ import org.springframework.data.domain.Slice;
 
 public interface ChatMessageService {
 
-    ChatMessage save(ChatMessagePayload chatMessagePayload);
+    ChatMessagePayload save(ChatMessagePayload chatMessagePayload);
 
     Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable);
+
+    Long countNewMessages(String senderId, String recipientId);
+
+    void updateMessageStatus(Long chatMessageId);
 }

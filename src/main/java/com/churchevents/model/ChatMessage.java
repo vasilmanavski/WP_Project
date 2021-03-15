@@ -1,5 +1,6 @@
 package com.churchevents.model;
 
+import com.churchevents.model.enums.MessageStatus;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -25,6 +26,9 @@ public class ChatMessage {
 
     private Date timestamp;
 
+    @Enumerated(value = EnumType.STRING)
+    private MessageStatus messageStatus;
+
     public ChatMessage() {
     }
 
@@ -33,5 +37,6 @@ public class ChatMessage {
         this.recipient = recipient;
         this.content = content;
         this.timestamp = timestamp;
+        this.messageStatus = MessageStatus.DELIVERED;
     }
 }

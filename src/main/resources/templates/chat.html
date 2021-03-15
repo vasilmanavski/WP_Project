@@ -52,8 +52,8 @@
     <div class="row">
         <div class="col-4">
             <h2>All users</h2>
-            <div>
-                <div th:each="user : ${allUsers}" class="users">
+            <div id="all_users">
+                <div th:each="user : ${allUsers}" class="users" th:id="${user}">
                     <th:block th:text="${user}"></th:block>
                 </div>
             </div>
@@ -70,6 +70,7 @@
             <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
             <button id="send">Send message</button>
             <button id="load_more">Load more</button>
+            <button id="count_new">Count new</button>
         </div>
     </div>
 
@@ -89,6 +90,7 @@
     const size = 10;
     const sort = "timestamp,desc";
     let hasMoreMessages = true;
+    const allUserEmails = [[${allUsers}]];
 
     const connect = () => {
         let sockjs = new SockJS("http://localhost:8080/ws");
@@ -104,11 +106,29 @@
         );
     };
 
+    const updateMessageStatus = (message) => {
+        $.ajax({url: `/messages/${message.id}`, method: "PUT", success: function (result) {
+            console.log(result);
+        }});
+    };
+
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
         if (newMessage.senderId === activeUser) {
             $("#messagediv").append(`<div>${newMessage.content}</div>`);
             $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+            updateMessageStatus(newMessage);
+        } else {
+            const theDiv = document.getElementById(newMessage.senderId);
+            const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
+            if(isNaN(divOldContent[1])) {
+                console.log("problem caused by number of message / onMessageReceived");
+                return;
+            }
+            const constCount = parseInt(divOldContent[1]) + 1;
+            theDiv.textContent = divOldContent[0] + " " + constCount;
+
+            document.getElementById("all_users").prepend(theDiv);
         }
     };
 
@@ -140,6 +160,14 @@
                 }
             }
 
+            const theDiv = document.getElementById(`${activeUser}`);
+            const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
+            if(isNaN(divOldContent[1])) {
+                console.log("problem caused by number of messages / loadMessages");
+                //return;
+            }
+            theDiv.textContent = divOldContent[0] + " " + 0;
+
             result.forEach(function (message) {
                 if (message.senderId === currentUser) {
                     $("#messagediv").prepend(`<div class="sent-messages">${message.content}</div>`);
@@ -153,9 +181,18 @@
     $(document).ready(function () {
         connect();
 
+        allUserEmails.forEach(function (userEmail) {
+            $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
+                console.log(userEmail, result);
+                const theDiv = document.getElementById(`${userEmail}`);
+                const content = document.createTextNode(result);
+                theDiv.appendChild(content);
+            }});
+        });
+
         $("#send").click(function () {
             let userInput = $("#user_input").val().trim();
-            if (userInput == '') {
+            if (userInput === '') {
                 console.log("Cannot send empty message.");
                 return;
             }
@@ -172,7 +209,7 @@
 
         $(".users").click(function () {
             if (activeUserDiv != null) {
-                if (activeUser !== $(this).text().trim()) {
+                if (activeUser !== $(this).attr("id")) {
                     activeUserDiv.css("background-color", "white");
                     page = 0;
                     hasMoreMessages = true;
@@ -182,7 +219,7 @@
             }
             activeUserDiv = $(this);
             activeUserDiv.css("background-color", "#F0F0F0");
-            activeUser = activeUserDiv.text().trim();
+            activeUser = activeUserDiv.attr("id");
             loadMessages();
         });
 
@@ -191,6 +228,12 @@
                 page++;
                 loadMessages();
             }
+        });
+
+        $("#count_new").click(function () {
+            $.ajax({url: "/messages/senderId/count", success: function (result) {
+                console.log(result);
+            }});
         });
     });
 </script>

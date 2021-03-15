@@ -7,6 +7,8 @@ import java.util.Date;
 @Data
 public class ChatMessagePayload {
 
+    private Long id;
+
     private String senderId;
 
     private String recipientId;
@@ -18,7 +20,8 @@ public class ChatMessagePayload {
     public ChatMessagePayload() {
     }
 
-    public ChatMessagePayload(String senderId, String recipientId, String content, Date timestamp) {
+    public ChatMessagePayload(Long id, String senderId, String recipientId, String content, Date timestamp) {
+        this.id = id;
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.content = content;
