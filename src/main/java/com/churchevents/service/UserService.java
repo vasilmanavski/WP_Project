@@ -20,6 +20,4 @@ public interface UserService extends UserDetailsService {
     void save(User user);
 
     void timerForVerification(String email);
-
-    List<String> allUserEmails();
 }

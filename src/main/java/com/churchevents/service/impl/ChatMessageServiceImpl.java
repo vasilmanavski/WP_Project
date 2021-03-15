@@ -13,10 +13,43 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
+import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatMessageServiceImpl implements ChatMessageService {
+
+    static class SenderRecipientClass {
+
+        private String id;
+
+        private Date date;
+
+        public SenderRecipientClass() { }
+
+        public SenderRecipientClass(String id, Date date) {
+            this.id = id;
+            this.date = date;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
+        }
+    }
 
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
@@ -75,5 +108,48 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         ChatMessage chatMessage = this.chatMessageRepository.findById(chatMessageId).orElseThrow();
         chatMessage.setMessageStatus(MessageStatus.SEEN);
         this.chatMessageRepository.save(chatMessage);
+    }
+
+    @Override
+    public List<String> allUserEmails(User currentUser) {
+        List<ChatMessage> chatMessagesSent = this.chatMessageRepository.findAllBySenderOrRecipient(currentUser, currentUser);
+
+        String currentUserId = currentUser.getEmail();
+        List<SenderRecipientClass> latestMessageBetweenUser = new ArrayList<>(
+                chatMessagesSent.stream()
+                        .map(chatMessage -> {
+                            String senderId = chatMessage.getSender().getEmail();
+                            String recipientId = chatMessage.getRecipient().getEmail();
+
+                            String id = senderId.equals(currentUserId) ? senderId + " " + recipientId : recipientId + " " + senderId;
+
+                            return new SenderRecipientClass(id, chatMessage.getTimestamp());
+                        })
+                        .collect(Collectors.toMap(SenderRecipientClass::getId, Function.identity(),
+                                BinaryOperator.maxBy(Comparator.comparing(SenderRecipientClass::getDate))
+                                )
+                        )
+                        .values()
+        );
+
+        List<String> allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage = latestMessageBetweenUser.stream()
+                .sorted(Comparator.comparing(SenderRecipientClass::getDate).reversed())
+                .map(senderRecipientClass -> {
+                    String[] userIdsPair = senderRecipientClass.getId().split("\\s");
+                    String senderId = userIdsPair[0];
+                    String recipientId = userIdsPair[1];
+
+                    return senderId.equals(currentUserId) ? recipientId : senderId;
+                })
+                .collect(Collectors.toList());
+
+        List<String> allOtherUsersWhoDontHaveMessagesWithTheCurrentUser = this.userRepository.findAll().stream()
+                .map(User::getEmail)
+                .filter(userId -> !userId.equals(currentUserId))
+                .filter(userId -> !allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage.contains(userId))
+                .collect(Collectors.toList());
+
+        allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage.addAll(allOtherUsersWhoDontHaveMessagesWithTheCurrentUser);
+        return allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage;
     }
 }

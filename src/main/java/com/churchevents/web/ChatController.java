@@ -43,10 +43,10 @@ public class ChatController {
         );
     }
 
-    @GetMapping("/chat-1")
+    @GetMapping("/chat")
     public String getChats(Model model, Authentication authentication) {
-        String currentUserId = ((User)authentication.getPrincipal()).getEmail();
-        model.addAttribute("allUsers", this.userService.allUserEmails());
+        User currentUser = (User)authentication.getPrincipal();
+        model.addAttribute("allUsers", this.chatMessageService.allUserEmails(currentUser));
         return "chat";
     }
 

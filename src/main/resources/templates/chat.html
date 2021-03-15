@@ -70,7 +70,6 @@
             <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
             <button id="send">Send message</button>
             <button id="load_more">Load more</button>
-            <button id="count_new">Count new</button>
         </div>
     </div>
 
@@ -205,6 +204,9 @@
 
             $("#messagediv").append(`<div class="sent-messages">${userInput}</div>`);
             $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+
+            const theDiv = document.getElementById(activeUser);
+            document.getElementById("all_users").prepend(theDiv);
         });
 
         $(".users").click(function () {
@@ -228,12 +230,6 @@
                 page++;
                 loadMessages();
             }
-        });
-
-        $("#count_new").click(function () {
-            $.ajax({url: "/messages/senderId/count", success: function (result) {
-                console.log(result);
-            }});
         });
     });
 </script>

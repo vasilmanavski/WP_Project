@@ -77,9 +77,4 @@ public class UserServiceImpl implements UserService {
         User user = new User(email,passwordEncoder.encode(password),isSubscribed,role);
         return userRepository.save(user);
     }
-
-    @Override
-    public List<String> allUserEmails() {
-        return this.userRepository.findAll().stream().map(User::getEmail).collect(Collectors.toList());
-    }
 }
