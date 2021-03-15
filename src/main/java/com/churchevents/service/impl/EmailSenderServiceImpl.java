@@ -2,13 +2,17 @@ package com.churchevents.service.impl;
 
 import com.churchevents.model.Subscriber;
 import com.churchevents.model.User;
+import com.churchevents.model.events.EmailSentEvent;
+import com.churchevents.model.events.SubscriberEmailSentEvent;
 import com.churchevents.model.tokens.ConfirmationToken;
 import com.churchevents.model.tokens.SubscriptionToken;
 import com.churchevents.repository.ConfirmationTokenRepository;
 import com.churchevents.repository.SubscribersRepository;
 import com.churchevents.repository.SubscriptionTokenRepository;
 import com.churchevents.service.EmailSenderService;
+import com.churchevents.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -32,24 +36,29 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     private ConfirmationTokenRepository confirmationTokenRepository;
     private final SubscribersRepository subscribersRepository;
     private SubscriptionTokenRepository subscriptionTokenRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserService userService;
 
     @Autowired
-    public EmailSenderServiceImpl(JavaMailSender javaMailSender, ConfirmationTokenRepository confirmationTokenRepository, SubscriptionTokenRepository subscriptionTokenRepository, SubscribersRepository subscribersRepository, SubscriptionTokenRepository subscriptionTokenRepository1) {
+    public EmailSenderServiceImpl(JavaMailSender javaMailSender, ConfirmationTokenRepository confirmationTokenRepository, SubscribersRepository subscribersRepository, SubscriptionTokenRepository subscriptionTokenRepository1, ApplicationEventPublisher applicationEventPublisher, UserService userService) {
 
         this.javaMailSender = javaMailSender;
         this.confirmationTokenRepository = confirmationTokenRepository;
         this.subscribersRepository = subscribersRepository;
         this.subscriptionTokenRepository = subscriptionTokenRepository1;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.userService = userService;
     }
 
     @Override
     @Async
     public void sendEmail(SimpleMailMessage email) {
-        javaMailSender.send(email);
+//        this.applicationEventPublisher.publishEvent(new UserCreatedEvent());
+
     }
 
     @Override
-    public SimpleMailMessage formRegistrationEmail(User user) {
+    public void formRegistrationEmail(User user) {
 
         ConfirmationToken confirmationToken = new ConfirmationToken(user);
         this.confirmationTokenRepository.save(confirmationToken);
@@ -61,10 +70,11 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         mailMessage.setText("To confirm your account, please click here : "
                 + "https://markuskirche.herokuapp.com/confirm-account?token=" + confirmationToken.getConfirmationToken());
 
-        return mailMessage;
+        javaMailSender.send(mailMessage);
+        this.applicationEventPublisher.publishEvent(new EmailSentEvent(user));
     }
 
-    public SimpleMailMessage formSubscriptionEmail(Subscriber subscriber){
+    public void formSubscriptionEmail(Subscriber subscriber){
         SubscriptionToken subscriptionToken = new SubscriptionToken(subscriber);
         this.subscriptionTokenRepository.save(subscriptionToken);
 
@@ -75,7 +85,8 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         mailMessage.setText("To confirm your subscription, please click here : "
                 + "https://markuskirche.herokuapp.com/subscribers/confirm-subscription?token=" + subscriptionToken.getSubscriptionToken());
 
-        return mailMessage;
+        javaMailSender.send(mailMessage);
+        this.applicationEventPublisher.publishEvent(new SubscriberEmailSentEvent(subscriber));
 
     }
 

@@ -49,9 +49,7 @@ public class SubscribersController {
             this.subscribersService.save(email, false);
 
             Subscriber subscriber = new Subscriber(email, false);
-            SimpleMailMessage mailMessage = this.emailSenderService.formSubscriptionEmail(subscriber);
-            this.emailSenderService.sendEmail(mailMessage);
-            this.subscribersService.timerForVerification(email);
+            this.emailSenderService.formSubscriptionEmail(subscriber);
 
             redirectAttributes.addFlashAttribute("email", email);
 

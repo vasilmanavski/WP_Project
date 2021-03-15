@@ -1,6 +1,7 @@
 package com.churchevents.service;
 
 import com.churchevents.model.Subscriber;
+import com.churchevents.model.events.SubscriberEmailSentEvent;
 import com.churchevents.model.tokens.SubscriptionToken;
 
 import javax.swing.text.StyledEditorKit;
@@ -11,7 +12,7 @@ public interface SubscribersService {
     List<Subscriber> findAll();
     void save(String email, Boolean isEnabled);
     Optional<Subscriber> findByEmail(String email);
-    void timerForVerification(String email);
+    void timerForVerification(SubscriberEmailSentEvent event);
     void delete(Subscriber subscriber);
     void deleteTokenAndSubscriber(SubscriptionToken token, Subscriber subscriber);
 }

@@ -2,6 +2,7 @@ package com.churchevents.service.impl;
 
 
 import com.churchevents.model.enums.Role;
+import com.churchevents.model.events.EmailSentEvent;
 import com.churchevents.model.exceptions.EmailAlreadyExistsException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.PasswordsDoNotMatchException;
@@ -48,11 +49,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void timerForVerification(String email) {
+    public void timerForVerification(EmailSentEvent event) {
         CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
 
-            User user = this.userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException(email));
+            User user = this.userRepository.findByEmail(event.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException(event.getEmail()));
 
             ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
             this.confirmationTokenRepository.delete(confirmationToken);
@@ -61,6 +62,7 @@ public class UserServiceImpl implements UserService {
                 this.userRepository.delete(user);
             }
         });
+
     }
 
     @Override

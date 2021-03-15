@@ -11,8 +11,8 @@ import java.util.List;
 public interface EmailSenderService {
 
     void sendEmail(SimpleMailMessage email);
-    SimpleMailMessage formRegistrationEmail(User user);
-    SimpleMailMessage formSubscriptionEmail(Subscriber subscriber);
+    void formRegistrationEmail(User user);
+    void formSubscriptionEmail(Subscriber subscriber);
 
     void formRegistrationEmailForSubscription(String email) throws MessagingException;
     void newsletterMail(String fileToAttach, List<Subscriber> subscribers);

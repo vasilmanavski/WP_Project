@@ -2,6 +2,7 @@ package com.churchevents.service;
 
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Role;
+import com.churchevents.model.events.EmailSentEvent;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,7 +20,7 @@ public interface UserService extends UserDetailsService {
 
     void save(User user);
 
-    void timerForVerification(String email);
+    void timerForVerification(EmailSentEvent event);
     List<User> listAllUsers();
 
 }

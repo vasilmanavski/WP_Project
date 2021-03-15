@@ -1,6 +1,7 @@
 package com.churchevents.service.impl;
 
 import com.churchevents.model.Subscriber;
+import com.churchevents.model.events.SubscriberEmailSentEvent;
 import com.churchevents.model.exceptions.*;
 import com.churchevents.model.tokens.SubscriptionToken;
 import com.churchevents.repository.SubscribersRepository;
@@ -41,11 +42,11 @@ public class SubscribersServiceImpl implements SubscribersService {
     }
 
     @Override
-    public void timerForVerification(String email) {
+    public void timerForVerification(SubscriberEmailSentEvent event) {
         CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
 
-            Subscriber subscriber = this.subscribersRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException(email));
+            Subscriber subscriber = this.subscribersRepository.findByEmail(event.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException(event.getEmail()));
 
             SubscriptionToken subscriptionToken = this.subscriptionTokenRepository.findBySubscriber(subscriber);
             if(subscriptionTokenRepository.existsBySubscriptionToken(subscriptionToken.getSubscriptionToken())) {
