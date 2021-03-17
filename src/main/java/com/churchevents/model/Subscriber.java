@@ -25,12 +25,4 @@ public class Subscriber {
 
     }
 
-//
-//    public Boolean isEnabled() {
-//        return isEnabled;
-//    }
-//
-//    public void setIsEnabled(Boolean isEnabled){
-//        this.isEnabled = isEnabled;
-//    }
 }

@@ -51,13 +51,13 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     }
 
     @Override
-    @Async
     public void sendEmail(SimpleMailMessage email) {
 //        this.applicationEventPublisher.publishEvent(new UserCreatedEvent());
 
     }
 
     @Override
+    @Async
     public void formRegistrationEmail(User user) {
 
         ConfirmationToken confirmationToken = new ConfirmationToken(user);
@@ -74,6 +74,8 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         this.applicationEventPublisher.publishEvent(new EmailSentEvent(user));
     }
 
+    @Override
+    @Async
     public void formSubscriptionEmail(Subscriber subscriber){
         SubscriptionToken subscriptionToken = new SubscriptionToken(subscriber);
         this.subscriptionTokenRepository.save(subscriptionToken);

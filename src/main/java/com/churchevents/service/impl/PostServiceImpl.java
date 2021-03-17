@@ -1,8 +1,8 @@
 package com.churchevents.service.impl;
 
-import com.churchevents.exceptions.InvalidPostIdException;
 import com.churchevents.model.Post;
 import com.churchevents.model.enums.Type;
+import com.churchevents.model.exceptions.InvalidPostIdException;
 import com.churchevents.repository.PostRepository;
 import com.churchevents.service.PostService;
 import javassist.bytecode.ByteArray;

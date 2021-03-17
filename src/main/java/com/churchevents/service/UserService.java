@@ -20,6 +20,7 @@ public interface UserService extends UserDetailsService {
 
     void save(User user);
 
+
     void timerForVerification(EmailSentEvent event);
     List<User> listAllUsers();
 

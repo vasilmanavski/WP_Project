@@ -1,12 +1,9 @@
 package com.churchevents.model;
 
 import com.churchevents.model.enums.Type;
-import javassist.bytecode.ByteArray;
 import lombok.Data;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
-import java.sql.Blob;
 import java.util.Date;
 
 @Data

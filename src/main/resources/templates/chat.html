@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js"></script>
+    <style>
+        .users {
+            border: 1px black solid;
+            margin: 2px auto;
+            border-radius: 10px;
+        }
+
+        .users:hover {
+            background-color: darkgrey;
+            cursor: pointer;
+        }
+
+        #messagediv {
+            display: block;
+            height: 400px;
+            overflow-y: scroll;
+        }
+
+        .sent-messages {
+            text-align: right;
+        }
+
+        .messages {
+
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <h2>All users</h2>
+            <div id="all_users">
+                <div th:each="user : ${allUsers}" class="users" th:id="${user}">
+                    <th:block th:text="${user}"></th:block>
+                </div>
+            </div>
+        </div>
+        <div class="col-8">
+            <div id="messagediv">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-8 offset-4">
+            <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
+            <button id="send">Send message</button>
+            <button id="load_more">Load more</button>
+        </div>
+    </div>
+
+    <br/>
+    <hr/>
+
+    <span th:text ="${#authentication.getPrincipal().getEmail()}"></span>
+</div>
+
+<script th:inline="javascript">
+
+    let stompClient = null;
+    let activeUser = null;
+    let activeUserDiv = null;
+    const currentUser = [[${#authentication.getPrincipal().getEmail()}]];
+    let page = 0;
+    const size = 10;
+    const sort = "timestamp,desc";
+    let hasMoreMessages = true;
+    const allUserEmails = [[${allUsers}]];
+
+    const connect = () => {
+        let sockjs = new SockJS("http://localhost:8080/ws");
+        stompClient = Stomp.over(sockjs);
+        stompClient.connect({}, onConnected, onError);
+    };
+
+    const onConnected = () => {
+        console.log("connected");
+        stompClient.subscribe(
+            "/user/" + currentUser + "/queue/messages",
+            onMessageReceived
+        );
+    };
+
+    const updateMessageStatus = (message) => {
+        $.ajax({url: `/messages/${message.id}`, method: "PUT", success: function (result) {
+            console.log(result);
+        }});
+    };
+
+    const onMessageReceived = (msg) => {
+        const newMessage = JSON.parse(msg.body);
+        if (newMessage.senderId === activeUser) {
+            $("#messagediv").append(`<div>${newMessage.content}</div>`);
+            $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+            updateMessageStatus(newMessage);
+        } else {
+            const theDiv = document.getElementById(newMessage.senderId);
+            const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
+            if(isNaN(divOldContent[1])) {
+                console.log("problem caused by number of message / onMessageReceived");
+                return;
+            }
+            const constCount = parseInt(divOldContent[1]) + 1;
+            theDiv.textContent = divOldContent[0] + " " + constCount;
+
+            document.getElementById("all_users").prepend(theDiv);
+        }
+    };
+
+    const sendMessage = (userInput) => {
+        const message = {
+            senderId: currentUser,
+            recipientId: activeUser,
+            content: userInput,
+            timestamp: new Date()
+        };
+        stompClient.send("/app/chat", {}, JSON.stringify(message));
+    };
+
+    const onError = (err) => {
+        console.log(err);
+    };
+
+    const loadMessages = () => {
+        if (page === 0) {
+            $("#messagediv").empty();
+        }
+        $.ajax({url: `/messages/${currentUser}/${activeUser}?page=${page}&size=${size}&sort=${sort}`, success: function (result) {
+            console.log(result.length);
+
+            if (result.length < size) {
+                hasMoreMessages = false;
+                if (result.length === 0) {
+                    return;
+                }
+            }
+
+            const theDiv = document.getElementById(`${activeUser}`);
+            const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
+            if(isNaN(divOldContent[1])) {
+                console.log("problem caused by number of messages / loadMessages");
+                //return;
+            }
+            theDiv.textContent = divOldContent[0] + " " + 0;
+
+            result.forEach(function (message) {
+                if (message.senderId === currentUser) {
+                    $("#messagediv").prepend(`<div class="sent-messages">${message.content}</div>`);
+                } else {
+                    $("#messagediv").prepend(`<div>${message.content}</div>`);
+                }
+            });
+        }});
+    }
+
+    $(document).ready(function () {
+        connect();
+
+        allUserEmails.forEach(function (userEmail) {
+            $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
+                console.log(userEmail, result);
+                const theDiv = document.getElementById(`${userEmail}`);
+                const content = document.createTextNode(result);
+                theDiv.appendChild(content);
+            }});
+        });
+
+        $("#send").click(function () {
+            let userInput = $("#user_input").val().trim();
+            if (userInput === '') {
+                console.log("Cannot send empty message.");
+                return;
+            }
+            if (activeUser == null) {
+                console.log("Active user is null.")
+                return;
+            }
+            $("#user_input").val("");
+            sendMessage(userInput);
+
+            $("#messagediv").append(`<div class="sent-messages">${userInput}</div>`);
+            $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+
+            const theDiv = document.getElementById(activeUser);
+            document.getElementById("all_users").prepend(theDiv);
+        });
+
+        $(".users").click(function () {
+            if (activeUserDiv != null) {
+                if (activeUser !== $(this).attr("id")) {
+                    activeUserDiv.css("background-color", "white");
+                    page = 0;
+                    hasMoreMessages = true;
+                } else {
+                    return;
+                }
+            }
+            activeUserDiv = $(this);
+            activeUserDiv.css("background-color", "#F0F0F0");
+            activeUser = activeUserDiv.attr("id");
+            loadMessages();
+        });
+
+        $("#load_more").click(function () {
+            if (activeUserDiv != null && hasMoreMessages) {
+                page++;
+                loadMessages();
+            }
+        });
+    });
+</script>
+</body>
+</html>

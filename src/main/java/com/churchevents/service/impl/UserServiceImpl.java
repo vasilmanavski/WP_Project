@@ -1,6 +1,5 @@
 package com.churchevents.service.impl;
 
-
 import com.churchevents.model.enums.Role;
 import com.churchevents.model.events.EmailSentEvent;
 import com.churchevents.model.exceptions.EmailAlreadyExistsException;
@@ -84,3 +83,4 @@ public class UserServiceImpl implements UserService {
     }
 
 }
+
