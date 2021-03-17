@@ -92,7 +92,7 @@
     const allUserEmails = [[${allUsers}]];
 
     const connect = () => {
-        let sockjs = new SockJS("http://localhost:8080/ws");
+        let sockjs = new SockJS("https://markuskirche.herokuapp.com/ws");
         stompClient = Stomp.over(sockjs);
         stompClient.connect({}, onConnected, onError);
     };
