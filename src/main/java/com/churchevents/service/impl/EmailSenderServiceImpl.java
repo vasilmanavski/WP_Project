@@ -66,7 +66,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(user.getEmail());
         mailMessage.setSubject("Complete your Registration!");
-        mailMessage.setFrom("noreply@gmail.com");
+        mailMessage.setFrom("EmKCologne@mail.com");
         mailMessage.setText("To confirm your account, please click here : "
                 + "https://markuskirche.herokuapp.com/confirm-account?token=" + confirmationToken.getConfirmationToken());
 
@@ -81,7 +81,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(subscriber.getEmail());
         mailMessage.setSubject("Complete your Subscription!");
-        mailMessage.setFrom("noreply@gmail.com");
+        mailMessage.setFrom("EmKCologne@mail.com");
         mailMessage.setText("To confirm your subscription, please click here : "
                 + "https://markuskirche.herokuapp.com/subscribers/confirm-subscription?token=" + subscriptionToken.getSubscriptionToken());
 
@@ -96,7 +96,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
     try {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
-        helper.setFrom("noreply@gmail.com");
+        helper.setFrom("EmKCologne@mail.com");
         helper.setTo(email);
         helper.setSubject("Markuskirche Köln");
         helper.setText(
@@ -133,7 +133,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
 
                     MimeBodyPart messageBodyPart = new MimeBodyPart();
                     mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(subscriber.getEmail()));
-                    mimeMessage.setFrom(new InternetAddress("vasilmanavski@gmail.com"));
+                    mimeMessage.setFrom(new InternetAddress("EmKCologne@mail.com"));
                     mimeMessage.setSubject("Markuskirche Köln weekly newsletter");
                     mimeMessage.setText("<div>We have new post, check it out</div>");
                     messageBodyPart.setContent(mimeMessage, "text/html");
