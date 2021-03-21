@@ -86,6 +86,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             chatMessagesWithUpdatedStatus.forEach(chatMessage -> chatMessage.setMessageStatus(MessageStatus.SEEN));
             this.chatMessageRepository.saveAll(chatMessagesWithUpdatedStatus);
 
+            if (!chatMessagesToBeUpdated.hasNext()) {
+                break;
+            }
             Pageable pageableCopy = PageRequest.of(++currentPage, pageable.getPageSize(), pageable.getSort());
             chatMessagesToBeUpdated = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageableCopy);
             areThereNewMessagesInCurrentBatch = chatMessagesToBeUpdated.getContent().stream().anyMatch(chatMessage -> chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED));
@@ -134,13 +137,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         List<String> allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage = latestMessageBetweenUser.stream()
                 .sorted(Comparator.comparing(SenderRecipientClass::getDate).reversed())
-                .map(senderRecipientClass -> {
-                    String[] userIdsPair = senderRecipientClass.getId().split("\\s");
-                    String senderId = userIdsPair[0];
-                    String recipientId = userIdsPair[1];
-
-                    return senderId.equals(currentUserId) ? recipientId : senderId;
-                })
+                .map(senderRecipientClass -> senderRecipientClass.getId().split("\\s")[1])
                 .collect(Collectors.toList());
 
         List<String> allOtherUsersWhoDontHaveMessagesWithTheCurrentUser = this.userRepository.findAll().stream()

@@ -1,10 +1,8 @@
 package com.churchevents.web;
 
-import com.churchevents.model.ChatMessage;
 import com.churchevents.model.ChatMessagePayload;
 import com.churchevents.model.User;
 import com.churchevents.service.ChatMessageService;
-import com.churchevents.service.UserService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -22,14 +20,11 @@ import java.util.List;
 @Controller
 public class ChatController {
 
-    private final UserService userService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatMessageService chatMessageService;
 
-    public ChatController(UserService userService,
-                          SimpMessagingTemplate simpMessagingTemplate,
+    public ChatController(SimpMessagingTemplate simpMessagingTemplate,
                           ChatMessageService chatMessageService) {
-        this.userService = userService;
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.chatMessageService = chatMessageService;
     }
@@ -78,6 +73,8 @@ public class ChatController {
 
     @PutMapping("/messages/{messageId}")
     public ResponseEntity<?> updateMessageStatus(@PathVariable Long messageId) {
+        //todo: check if message to be updated has the recipientId of the currently logged in user
+
         try {
             this.chatMessageService.updateMessageStatus(messageId);
         } catch (Exception exception) {
