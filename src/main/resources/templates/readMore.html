@@ -64,6 +64,9 @@
     <!-- The form below should invoke the method ProductsController.showProducts -->
 
     <form method="post"  enctype="multipart/form-data" th:action="@{'/posts/{id}/readMore' (id=${post?.id})}">
+
+
+
          <div class="row">
              <div class="col-12" >
                  <img class="center" th:src="${post?.getBase64Image()}"/>
@@ -93,6 +96,11 @@
 
             </div>
 
+        </div>
+
+        <div style="font-size: 20px; font:bold; color: brown">
+            Total views
+            <label th:name="clicked" th:value="${clicked}" th:text="${clicked}"><label/>
         </div>
     </form>
     </div>

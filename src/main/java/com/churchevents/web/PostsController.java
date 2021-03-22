@@ -40,10 +40,23 @@ public class PostsController {
         Rating [] ratings = Rating.values();
         List<User> users = userService.listAllUsers();
         List<Post> posts = this.postService.listAllPosts();
+
+
         model.addAttribute("rating",ratings);
         model.addAttribute("posts",posts);
         model.addAttribute("user",users);
         return "list_posts.html";
+
+    }
+    @GetMapping("/calendar")
+    public String showCalendar(Model model) {
+        Rating [] ratings = Rating.values();
+        List<User> users = userService.listAllUsers();
+        List<Post> posts = this.postService.listAllPosts();
+        model.addAttribute("rating",ratings);
+        model.addAttribute("posts",posts);
+        model.addAttribute("user",users);
+        return "cal.html";
 
     }
 
@@ -52,6 +65,7 @@ public class PostsController {
         List<Post> posts = this.postService.listAllPosts();
         Type [] type = Type.values();
         Rating [] ratings = Rating.values();
+
         model.addAttribute("posts",posts);
         model.addAttribute("type",type);
         model.addAttribute("rating",ratings);
@@ -98,20 +112,11 @@ public class PostsController {
     @PostMapping("/posts/{id}/review")
     public String review(@PathVariable Long id,
                          @RequestParam Rating rating,
-                         @RequestParam String email,
-                         Model model, HttpServletRequest request
-                         ) {
-       //String email = request.getParameter("username");
-       // User user = this.authService.login(request.getParameter("username"),
-       //         request.getParameter("password"));
+                         @RequestParam String email
+    ) {
 
-       List<User> users = userService.listAllUsers();
        User user = userService.findByEmail(email).get();
-        Rating [] ratings = Rating.values();
-        Post post = this.postService.findById(id);
-      //  User user = this.userService.findByEmail(email).get();
-       model.addAttribute("user",users);
-        model.addAttribute("rating",ratings);
+       Post post = this.postService.findById(id);
         this.reviewService.create(rating,user,post);
         return "redirect:/posts";
     }
@@ -125,12 +130,17 @@ public class PostsController {
     @GetMapping("posts/{id}/readMore")
     public String readMore(@PathVariable Long id, Model model){
 
+
         Post post = postService.findById(id);
 
-
+        int i = post.getPostClicked();
+        i = i+1;
+        post.setPostClicked(i);
+        postService.click(id);
+        System.out.println(post.getPostClicked());
         Type [] type = Type.values();
 
-
+        model.addAttribute("clicked", post.getPostClicked());
         model.addAttribute("type",type);
         model.addAttribute("post",post);
 

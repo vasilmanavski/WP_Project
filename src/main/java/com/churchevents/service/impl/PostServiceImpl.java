@@ -69,6 +69,12 @@ public class PostServiceImpl implements PostService {
         return post;
     }
 
+    @Override
+    public Post click(Long id) {
+        Post post = this.postRepository.findById(id).get();
+          return  this.postRepository.save(post);
+    }
+
 
    /* @Override
     public Post post_clicked(Long id,Integer postClicked){

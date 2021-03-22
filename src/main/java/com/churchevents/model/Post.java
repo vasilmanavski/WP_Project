@@ -51,6 +51,10 @@ public class Post {
     public Post(){
     }
 
+    public void setPostClicked(Integer postClicked) {
+        this.postClicked = postClicked;
+    }
+
     public Long getId() {
         return id;
     }
@@ -121,10 +125,6 @@ public class Post {
         this.type = type;
     }
 
-     public Post(Long id,Integer postClicked){
-        this.id = id;
-        this.postClicked = postClicked;
-     }
 
     public Post(String title, String description,String shortDescription, String base64Image, Type type, Date dateOfEvent) {
         this.title = title;

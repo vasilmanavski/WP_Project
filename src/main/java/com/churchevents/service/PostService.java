@@ -21,7 +21,7 @@ public interface PostService {
 
     Post delete(Long id);
     //Post post_clicked(Long id,Integer postClicked);
-
+    Post click(Long id);
 
 
 }
