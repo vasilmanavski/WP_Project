@@ -34,122 +34,9 @@
             margin:0 auto;
             max-width: 1000px;
         }
-        opacity: 1;
-        }
-
 
 
     </style>
-    <style>
-
-        /*
-        i wish this required CSS was better documented :(
-        https://github.com/FezVrasta/popper.js/issues/674
-        derived from this CSS on this page: https://popper.js.org/tooltip-examples.html
-        */
-
-        .popper,
-        .tooltip {
-            position: absolute;
-            z-index: 9999;
-            background: #FFC107;
-            color: black;
-            width: 150px;
-            border-radius: 3px;
-            box-shadow: 0 0 2px rgba(0,0,0,0.5);
-            padding: 10px;
-            text-align: center;
-        }
-        .style5 .tooltip {
-            background: #1E252B;
-            color: #FFFFFF;
-            max-width: 200px;
-            width: auto;
-            font-size: .8rem;
-            padding: .5em 1em;
-        }
-        .popper .popper__arrow,
-        .tooltip .tooltip-arrow {
-            width: 0;
-            height: 0;
-            border-style: solid;
-            position: absolute;
-            margin: 5px;
-            opacity: 1;
-
-        }
-
-        .tooltip .tooltip-arrow,
-        .popper .popper__arrow {
-            border-color: #FFC107;
-        }
-        .style5 .tooltip .tooltip-arrow {
-            border-color: #1E252B;
-        }
-        .popper[x-placement^="top"],
-        .tooltip[x-placement^="top"] {
-            margin-bottom: 5px;
-        }
-        .popper[x-placement^="top"] .popper__arrow,
-        .tooltip[x-placement^="top"] .tooltip-arrow {
-            border-width: 5px 5px 0 5px;
-            border-left-color: transparent;
-            border-right-color: transparent;
-            border-bottom-color: transparent;
-            bottom: -5px;
-            left: calc(50% - 5px);
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-        .popper[x-placement^="bottom"],
-        .tooltip[x-placement^="bottom"] {
-            margin-top: 5px;
-            opacity: 1;
-        }
-        .tooltip[x-placement^="bottom"] .tooltip-arrow,
-        .popper[x-placement^="bottom"] .popper__arrow {
-            border-width: 0 5px 5px 5px;
-            border-left-color: transparent;
-            border-right-color: transparent;
-            border-top-color: transparent;
-            top: -5px;
-            left: calc(50% - 5px);
-            margin-top: 0;
-            margin-bottom: 0;
-        }
-        .tooltip[x-placement^="right"],
-        .popper[x-placement^="right"] {
-            margin-left: 5px;
-        }
-        .popper[x-placement^="right"] .popper__arrow,
-        .tooltip[x-placement^="right"] .tooltip-arrow {
-            border-width: 5px 5px 5px 0;
-            border-left-color: transparent;
-            border-top-color: transparent;
-            border-bottom-color: transparent;
-            left: -5px;
-            top: calc(50% - 5px);
-            margin-left: 0;
-            margin-right: 0;
-        }
-        .popper[x-placement^="left"],
-        .tooltip[x-placement^="left"] {
-            margin-right: 5px;
-        }
-        .popper[x-placement^="left"] .popper__arrow,
-        .tooltip[x-placement^="left"] .tooltip-arrow {
-            border-width: 5px 0 5px 5px;
-            border-top-color: transparent;
-            border-right-color: transparent;
-            border-bottom-color: transparent;
-            right: -5px;
-            top: calc(50% - 5px);
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-    </style>
-
 
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js'></script>
@@ -208,10 +95,7 @@
 
             });
 
-
-
             calendar.render();
-
 
             post.forEach(function (item) {
                 var title = item.title;
@@ -220,88 +104,21 @@
                 var id = item.id;
                 var event = {id: id, title: title, start: dateCreated};
 
-
                 calendar.addEvent(event);
-
 
             });
 
-
-
-
-
         });
-
-
-        //var post   = [[${posts}]];
-
-
 
     </script>
 
 
 </head>
-
-<header xmlns:th="http://www.thymeleaf.org">
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Markus Kirche</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-                    aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="collapse navbar-collapse justify-content-end" id="navbarsExampleDefault">
-
-
-
-                <form class="form-inline my-2 my-lg-0">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" aria-label="Small"
-                               aria-describedby="inputGroup-sizing-sm"
-                               placeholder="Search...">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-secondary btn-number">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                <ul class="nav navbar-nav navbar-right">
-
-                    <li class="nav-item" >
-                        <a class="nav-link" href="#">
-                            <th:block th:if="${#request.getRemoteUser() != null}"
-                                      th:text="${#request.getRemoteUser()}"></th:block>
-                        </a>
-                    </li>
-
-                    <li class="nav-item" >
-                        <a class="btn btn-light btn-sm ml-3" href="/logout">
-                            <i class="fa fa-shopping-cart"></i> Logout
-                        </a>
-                    </li>
-                    <li class="nav-item" >
-                        <a class="btn btn-light btn-sm ml-3" href="/login">
-                            <i class="fa fa-shopping-cart"></i> Login
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-</header>
-
-<body >
 <div id="container">
-
-
     <div class="row">
-
         <div class="col">
             <p style="font-size: 30px">Donate for church:</p>
-            <form method="POST" th:action="@{'/checkout'}"
-            >
+            <form method="POST" th:action="@{'/checkout'}">
                 <input type="number" name="amount">
                 <button class="btn btn-secondary btn-number" type="submit" >Confirm</button>
             </form>
@@ -324,18 +141,10 @@
                 <div class="col-6 border" >
                     <img th:src="${post.getBase64Image()}"/>
 
-                    <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}"
-                    >
-
-
+                    <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}">
 
                         <input type='hidden' th:if="${#request.getRemoteUser() != null}"
                                th:value="${#request.getRemoteUser()}" name='email' />
-
-
-
-
-
 
                         <div>
                             <th:block th:if="${#request.getRemoteUser() != null}" >
@@ -352,15 +161,7 @@
                             </th:block>
                         </div>
 
-
-
-
-
                     </form>
-
-                </div>
-
-
 
 
                 <div class="col-6 border">
@@ -380,15 +181,50 @@
                     <a th:href="@{'/posts/{id}/readMore' (id=${post.id})}" >Read More</a>
                 </div>
 
+            </form>
+                    <!--    Subscription and upload file-->
+                    <div class="newsletter-subscribe mt-5 container">
+                        <div class="container">
+                            <div class="intro">
+                                <h2 class="text-center newsletter">Subscribe to our Newsletter</h2>
+                            </div>
+                            <form method="POST" th:action='@{/subscribers/save}' class="form-inline">
+                                <div class="form-group">
+                                    <input class="form-control" type="email" name="email" placeholder="Your Email">
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" type="submit">Subscribe </button>
+                                </div>
+                            </form>
+                            <div th:if="${subscriberEmailError}">
+                                <h1>Looks like you are already subscribed. Please check your email</h1>
+                            </div>
+
+                            <div th:if="${email}">
+                                <h1>Thank you for subscribing</h1>
+                            </div>
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
+                        <input type="file" name="file"/>
+                        <br/>
+                        <br/>
+
+                        <button type="submit">Submit</button>
+                    </form>
+                    <hr/>
+                    <div th:if="${message}">
+                        <h2 th:text="${message}"/>
+                    </div>
+                    <hr />
+                    <a th:href="@{'/getPDF'}">Gemeindebrief</a>
+
+                </div>
             </div>
-
         </div>
-
-
     </div>
-
-
-
 </div>
-</body>
 </html>

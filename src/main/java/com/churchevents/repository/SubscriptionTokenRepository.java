@@ -11,8 +11,6 @@ import java.util.Optional;
 public interface SubscriptionTokenRepository extends JpaRepository<SubscriptionToken, String> {
     SubscriptionToken findBySubscriptionToken(String token);
     SubscriptionToken findBySubscriber(Subscriber subscriber);
-    Optional<SubscriptionToken> findBySubscriberEmail(String email);
-
 
     boolean existsBySubscriptionToken(String token);
 }

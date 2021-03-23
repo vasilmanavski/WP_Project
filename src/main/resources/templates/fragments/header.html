@@ -25,10 +25,11 @@
                 </form>
                 <ul class="nav navbar-nav navbar-right">
 
-                    <li class="nav-item" >
+                    <li class="nav-item" sec:authorize="isAuthenticated()">
                         <a class="nav-link" href="#">
                             <th:block th:if="${#request.getRemoteUser() != null}"
                                       th:text="${#request.getRemoteUser()}"></th:block>
+
                         </a>
                     </li>
 

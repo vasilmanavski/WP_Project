@@ -20,8 +20,8 @@ public class FileServiceImpl implements FileService {
     @Value("${app.upload.dir:${user.home}}")
     public String uploadDir;
 
-    public void uploadFile(MultipartFile file){
-        try{
+    public void uploadFile(MultipartFile file) throws IOException {
+
             Path copyLocation = Paths
                     .get(uploadDir + File.separator + StringUtils.cleanPath(file.getOriginalFilename()));
             Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
@@ -29,28 +29,6 @@ public class FileServiceImpl implements FileService {
 
             Files.move(copyLocation, Paths.get("src/main/resources/templates/pdf/Newsletter.pdf"), StandardCopyOption.REPLACE_EXISTING);
 
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new FileStorageException("Could not store file " + file.getOriginalFilename()
-                    + ". Please try again!");
-
-        }
     }
 
-    public void getPath(MultipartFile file){
-
-    }
-
-    @Override
-    public void saveFile(MultipartFile file) {
-
-
-//        try {
-//            Files.copy(file.getInputStream(), root.resolve(file.getOriginalFilename()));
-//        } catch (Exception e) {
-//            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
-//        }
-    }
 }

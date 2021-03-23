@@ -8,7 +8,7 @@
 <body>
     <h1>Add roles</h1>
     <form th:action="@{/User/Roles}"  th:method="POST">
-        <label for='email'>Email:</label><input id='email' type='text' name='email'/>
+        <label for='email'>Email:</label><input id='email' type='text' name='email' required=""/>
         <label >Name</label>:
         <select name="role">
             <option th:each="role: ${roles}"><th:block th:text="${role.name()}" th:value="${role.name()}"/></option>
@@ -16,6 +16,12 @@
 
         <input type='submit' value='Submit'/>
     </form>
+    <div th:if="${error}">
+        <h1 th:text="${error}"/>
+    </div>
+    <div th:if="${message}">
+        <h1 th:text="${message}"/>
+    </div>
 
 </body>
 </html>

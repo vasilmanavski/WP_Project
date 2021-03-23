@@ -2,6 +2,7 @@ package com.churchevents.service.impl;
 
 import com.churchevents.model.Subscriber;
 import com.churchevents.model.exceptions.InvalidArgumentsException;
+import com.churchevents.model.exceptions.TokenAlreadyExists;
 import com.churchevents.model.tokens.SubscriptionToken;
 import com.churchevents.repository.SubscribersRepository;
 import com.churchevents.repository.SubscriptionTokenRepository;
@@ -26,6 +27,8 @@ public class SubscriptionTokenServiceImpl implements SubscriptionTokenService {
 
     @Override
     public void save(SubscriptionToken subscriptionToken) {
+        SubscriptionToken checkToken = findBySubscriptionToken(subscriptionToken.getSubscriptionToken());
+        if (checkToken != null) throw new TokenAlreadyExists();
         this.subscriptionTokenRepository.save(subscriptionToken);
     }
 

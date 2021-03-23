@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class SubscribersServiceImpl implements SubscribersService {
 
     private final SubscribersRepository subscribersRepository;
-    private SubscriptionTokenRepository subscriptionTokenRepository;
+    private final SubscriptionTokenRepository subscriptionTokenRepository;
 
     public SubscribersServiceImpl(SubscribersRepository subscribersRepository, SubscriptionTokenRepository subscriptionToken) {
         this.subscribersRepository = subscribersRepository;
@@ -35,7 +35,7 @@ public class SubscribersServiceImpl implements SubscribersService {
     @Override
     public void save(String email, Boolean isEnabled) {
         if(email.isEmpty() || email == null) throw new InvalidEmailOrPasswordException();
-
+        if(subscribersRepository.existsByEmail(email) && isEnabled == false) throw new EmailAlreadyExistsException(email);
         Subscriber subscriber = new Subscriber(email, isEnabled);
         this.subscribersRepository.save(subscriber);
 

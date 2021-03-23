@@ -3,6 +3,7 @@ package com.churchevents.model;
 
 import com.churchevents.model.enums.Role;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -16,70 +17,16 @@ import java.util.List;
 @Table(name = "email_users")
 
 public class User implements UserDetails {
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Boolean getSubscribed() {
-        return isSubscribed;
-    }
-
-    public void setSubscribed(Boolean subscribed) {
-        isSubscribed = subscribed;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public void setAccountNonExpired(boolean accountNonExpired) {
-        isAccountNonExpired = accountNonExpired;
-    }
-
-    public void setAccountNonLocked(boolean accountNonLocked) {
-        isAccountNonLocked = accountNonLocked;
-    }
-
-    public void setCredentialsNonExpired(boolean credentialsNonExpired) {
-        isCredentialsNonExpired = credentialsNonExpired;
-    }
-
-    public void setEnabled(boolean enabled) {
-        isEnabled = enabled;
-    }
-
     @Id
     private String email;
 
     private String password;
 
-    private Boolean isSubscribed;
-
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Post> posts;
 
     @Enumerated(value = EnumType.STRING)
-    private Role role;
+    private Role role = Role.ROLE_USER;
 
     private boolean isAccountNonExpired = true;
     private boolean isAccountNonLocked = true;
@@ -87,11 +34,9 @@ public class User implements UserDetails {
     private boolean isEnabled = false;
 
 
-    public User(String email, String password, Boolean isSubscribed, Role role) {
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
-        this.isSubscribed = isSubscribed;
-        this.role = role;
     }
 
     public User() {
@@ -130,5 +75,42 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return isEnabled;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setAccountNonExpired(boolean accountNonExpired) {
+        isAccountNonExpired = accountNonExpired;
+    }
+
+
+    public void setEnabled(boolean enabled) {
+        isEnabled = enabled;
     }
 }

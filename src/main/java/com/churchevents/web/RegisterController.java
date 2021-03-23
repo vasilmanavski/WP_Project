@@ -2,6 +2,7 @@ package com.churchevents.web;
 
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Role;
+import com.churchevents.model.exceptions.EmailAlreadyExistsException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.PasswordsDoNotMatchException;
 import com.churchevents.model.tokens.ConfirmationToken;
@@ -44,16 +45,11 @@ public class RegisterController {
     public String register(@RequestParam String email,
                            @RequestParam String password,
                            @RequestParam String repeatedPassword,
-                           @RequestParam(required = false) Boolean isSubscribed,
-                           @RequestParam Role role,
                            Model model){
         try {
-            if (isSubscribed == null) {
-                isSubscribed = false;
-            }
-            this.userService.register(email, password, repeatedPassword, isSubscribed, role);
+            this.userService.register(email, password, repeatedPassword);
 
-            User user = new User(email, password, isSubscribed, role);
+            User user = new User(email, password);
 
             this.emailSenderService.formRegistrationEmail(user);
 
@@ -61,7 +57,7 @@ public class RegisterController {
             model.addAttribute("bodyContent", "successfulRegistration");
             return "master-template";
 
-        } catch(InvalidEmailOrPasswordException | PasswordsDoNotMatchException exception) {
+        } catch(InvalidEmailOrPasswordException | PasswordsDoNotMatchException | EmailAlreadyExistsException exception) {
             return "redirect:/register?error=" + exception.getMessage();
         }
     }
