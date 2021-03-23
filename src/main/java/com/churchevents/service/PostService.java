@@ -15,12 +15,16 @@ public interface PostService {
 
     Post findById(Long id);
 
-    Post create(String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException;
-
-    Post update(Long id, String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException;
-
-    Post delete(Long id);
-
-
     Post findByTitle(String title);
+
+    Post create(String title, String description,String shortDescription, MultipartFile image, Type type, Date dateOfEvent) throws IOException;
+
+    Post update(Long id, String title, String description,String shortDescription, MultipartFile image, Type type, Date dateOfEvent) throws IOException;
+    Post click(Long id);
+    Post delete(Long id);
+    //Post post_clicked(Long id,Integer postClicked);
+
+
+
 }
+

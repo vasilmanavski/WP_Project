@@ -1,5 +1,6 @@
 package com.churchevents.model.tokens;
 
+import com.churchevents.model.Subscriber;
 import com.churchevents.model.User;
 import lombok.Data;
 
@@ -35,5 +36,35 @@ public class ConfirmationToken {
 
     }
 
+    public User getUser() {
+        return user;
+    }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Long getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(Long tokenId) {
+        this.tokenId = tokenId;
+    }
+
+    public String getConfirmationToken() {
+        return confirmationToken;
+    }
+
+    public void setConfirmationToken(String confirmationToken) {
+        this.confirmationToken = confirmationToken;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
 }

@@ -9,11 +9,27 @@ import java.util.Date;
 @Data
 @Entity
 public class Post {
+
+
+    public String getShortDescription() {
+        return shortDescription;
+    }
+
+    public void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String title;
+
+
+    @Column(columnDefinition="text")
+    private String shortDescription;
+
+
     @Column(columnDefinition="text")
     private String description; //change to WYSIWYG
 
@@ -35,6 +51,10 @@ public class Post {
     private Type type;
 
     public Post(){
+    }
+
+    public void setPostClicked(Integer postClicked) {
+        this.postClicked = postClicked;
     }
 
     public Long getId() {
@@ -81,9 +101,9 @@ public class Post {
         return postClicked;
     }
 
-    public void setPostClicked(Integer postClicked) {
-        this.postClicked = postClicked;
-    }
+
+
+
 
     public Date getDateOfEvent() {
         return dateOfEvent;
@@ -109,16 +129,20 @@ public class Post {
         this.type = type;
     }
 
-    public Post(String title, String description, String base64Image, Type type, Date dateOfEvent) {
+
+
+    public Post(String title, String description,String shortDescription, String base64Image, Type type, Date dateOfEvent) {
         this.title = title;
         this.description = description;
+        this.shortDescription = shortDescription;
+
         this.base64Image = base64Image;
         this.dateCreated = new Date();
         this.type = type;
         this.dateOfEvent = this.type.toString().equals("EVENT")
                 ? dateOfEvent
                 : null;
-        this.eventGoing = 0;
-        this.postClicked = 0;
+       this.eventGoing = 0;
+       this.postClicked = 0;
     }
 }

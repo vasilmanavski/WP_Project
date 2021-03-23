@@ -5,6 +5,7 @@ import com.churchevents.model.enums.Type;
 import com.churchevents.model.exceptions.InvalidPostIdException;
 import com.churchevents.repository.PostRepository;
 import com.churchevents.service.PostService;
+
 import javassist.bytecode.ByteArray;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.sql.Blob;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -31,12 +38,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post findById(Long id) {
+
        return this.postRepository.findById(id).orElseThrow(InvalidPostIdException::new);
     }
 
+
+
     @Override
-    @Transactional
-    public Post create(String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
+    public Post create(String title, String description,String shortDescription, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
+
         Post post = new Post();
         if (image != null) {
             byte[] imageBytes = image.getBytes();
@@ -44,16 +54,22 @@ public class PostServiceImpl implements PostService {
             post.setBase64Image(base64Image);
         }
 
-        post = new Post(title,description, post.getBase64Image(), type,dateOfEvent);
+
+        post = new Post(title,description,shortDescription, post.getBase64Image(), type,dateOfEvent);
+
         return this.postRepository.save(post);
     }
 
     @Override
-    @Transactional
-    public Post update(Long id, String title, String description, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
+
+
+    public Post update(Long id, String title, String description,String shortDescription, MultipartFile image, Type type, Date dateOfEvent) throws IOException {
         Post post = this.findById(id);
         post.setTitle(title);
         post.setDescription(description);
+        post.setShortDescription(shortDescription);
+
+
         if (image != null) {
             byte[] imageBytes = image.getBytes();
             String base64Image = String.format("data:%s;base64,%s", image.getContentType(), Base64.getEncoder().encodeToString(imageBytes));
@@ -66,7 +82,6 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Transactional
     public Post delete(Long id) {
         Post post = this.findById(id);
         this.postRepository.delete(post);
@@ -74,10 +89,25 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+
     public Post findByTitle(String title) {
         return this.postRepository.findByTitle(title)
                 .orElseThrow(InvalidPostIdException::new);
     }
+
+
+
+    public Post click(Long id) {
+        Post post = this.postRepository.findById(id).get();
+          return  this.postRepository.save(post);
+    }
+
+
+   /* @Override
+    public Post post_clicked(Long id,Integer postClicked){
+       Post post = new Post(id,postClicked);
+        return this.postRepository.save(post);
+    }*/
 
 
 }

@@ -12,6 +12,22 @@ public class SubscriberEmailSentEvent extends ApplicationEvent {
     private LocalDateTime when;
     private String email;
 
+    public LocalDateTime getWhen() {
+        return when;
+    }
+
+    public void setWhen(LocalDateTime when) {
+        this.when = when;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     public SubscriberEmailSentEvent(Subscriber source) {
         super(source);
         this.when = LocalDateTime.now();

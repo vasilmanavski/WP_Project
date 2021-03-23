@@ -34,4 +34,36 @@ public class SubscriptionToken {
 
     public SubscriptionToken() {
     }
+
+    public Long getTokenId() {
+        return tokenId;
+    }
+
+    public void setTokenId(Long tokenId) {
+        this.tokenId = tokenId;
+    }
+
+    public String getSubscriptionToken() {
+        return subscriptionToken;
+    }
+
+    public void setSubscriptionToken(String subscriptionToken) {
+        this.subscriptionToken = subscriptionToken;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public Subscriber getSubscriber() {
+        return subscriber;
+    }
+
+    public void setSubscriber(Subscriber subscriber) {
+        this.subscriber = subscriber;
+    }
 }

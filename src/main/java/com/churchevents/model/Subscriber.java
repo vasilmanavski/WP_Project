@@ -15,6 +15,21 @@ public class Subscriber {
 
     private Boolean isEnabled = false;
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Boolean getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Boolean enabled) {
+        isEnabled = enabled;
+    }
 
     public Subscriber(String email, Boolean isEnabled) {
         this.email = email;

@@ -1,92 +1,394 @@
-<div xmlns:th="http://www.thymeleaf.org">
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Products</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-    <section class="jumbotron text-center">
+
+
+    <link href='/assets/demo-to-codepen.css' rel='stylesheet' />
+
+
+    <style>
+        header{
+            max-width: 100%;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+
+        }
+
+        #calendar {
+            max-width: 800px;
+            margin-right:0px;
+            max-height: 300px;
+        }
+        #container{
+            margin:0 auto;
+            max-width: 1000px;
+        }
+        opacity: 1;
+        }
+
+
+
+    </style>
+    <style>
+
+        /*
+        i wish this required CSS was better documented :(
+        https://github.com/FezVrasta/popper.js/issues/674
+        derived from this CSS on this page: https://popper.js.org/tooltip-examples.html
+        */
+
+        .popper,
+        .tooltip {
+            position: absolute;
+            z-index: 9999;
+            background: #FFC107;
+            color: black;
+            width: 150px;
+            border-radius: 3px;
+            box-shadow: 0 0 2px rgba(0,0,0,0.5);
+            padding: 10px;
+            text-align: center;
+        }
+        .style5 .tooltip {
+            background: #1E252B;
+            color: #FFFFFF;
+            max-width: 200px;
+            width: auto;
+            font-size: .8rem;
+            padding: .5em 1em;
+        }
+        .popper .popper__arrow,
+        .tooltip .tooltip-arrow {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            position: absolute;
+            margin: 5px;
+            opacity: 1;
+
+        }
+
+        .tooltip .tooltip-arrow,
+        .popper .popper__arrow {
+            border-color: #FFC107;
+        }
+        .style5 .tooltip .tooltip-arrow {
+            border-color: #1E252B;
+        }
+        .popper[x-placement^="top"],
+        .tooltip[x-placement^="top"] {
+            margin-bottom: 5px;
+        }
+        .popper[x-placement^="top"] .popper__arrow,
+        .tooltip[x-placement^="top"] .tooltip-arrow {
+            border-width: 5px 5px 0 5px;
+            border-left-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            bottom: -5px;
+            left: calc(50% - 5px);
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        .popper[x-placement^="bottom"],
+        .tooltip[x-placement^="bottom"] {
+            margin-top: 5px;
+            opacity: 1;
+        }
+        .tooltip[x-placement^="bottom"] .tooltip-arrow,
+        .popper[x-placement^="bottom"] .popper__arrow {
+            border-width: 0 5px 5px 5px;
+            border-left-color: transparent;
+            border-right-color: transparent;
+            border-top-color: transparent;
+            top: -5px;
+            left: calc(50% - 5px);
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        .tooltip[x-placement^="right"],
+        .popper[x-placement^="right"] {
+            margin-left: 5px;
+        }
+        .popper[x-placement^="right"] .popper__arrow,
+        .tooltip[x-placement^="right"] .tooltip-arrow {
+            border-width: 5px 5px 5px 0;
+            border-left-color: transparent;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+            left: -5px;
+            top: calc(50% - 5px);
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .popper[x-placement^="left"],
+        .tooltip[x-placement^="left"] {
+            margin-right: 5px;
+        }
+        .popper[x-placement^="left"] .popper__arrow,
+        .tooltip[x-placement^="left"] .tooltip-arrow {
+            border-width: 5px 0 5px 5px;
+            border-top-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            right: -5px;
+            top: calc(50% - 5px);
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+    </style>
+
+
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js'></script>
+
+
+
+
+
+
+
+    <script src='/assets/demo-to-codepen.js'></script>
+
+
+    <script src='https://unpkg.com/popper.js/dist/umd/popper.min.js'></script>
+    <script src='https://unpkg.com/tooltip.js/dist/umd/tooltip.min.js'></script>
+    <script th:inline="javascript">
+
+        var post =[[${posts}]]
+
+        console.log(post)
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let calendarEl = document.getElementById('calendar');
+            let calendar = new FullCalendar.Calendar(calendarEl, {
+
+                eventRender: function(info) {
+                    var tooltip = new Tooltip(info.el, {
+                        title: info.event.description,
+                        placement: 'top',
+                        trigger: 'hover',
+                        container: 'body'
+                    });
+                },
+
+                eventClick: function (info) {
+
+                    info.jsEvent.preventDefault();
+
+                    var ids = info.event.id;
+
+                    window.open("http://localhost:8080/posts/" + ids + "/readMore");
+
+
+                },
+
+
+                initialView: 'dayGridMonth',
+                //initialDate: '2021-02-07',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: [],
+
+
+            });
+
+
+
+            calendar.render();
+
+
+            post.forEach(function (item) {
+                var title = item.title;
+                var shortDescription = item.shortDescription;
+                var dateCreated = item.dateOfEvent;
+                var id = item.id;
+                var event = {id: id, title: title, start: dateCreated};
+
+
+                calendar.addEvent(event);
+
+
+            });
+
+
+
+
+
+        });
+
+
+        //var post   = [[${posts}]];
+
+
+
+    </script>
+
+
+</head>
+
+<header xmlns:th="http://www.thymeleaf.org">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         <div class="container">
-            <h1 class="jumbotron-heading">MarkusKirche</h1>
-            <h3 class="jumbotron-heading">slide show of posts</h3>
-        </div>
-    </section>
+            <a class="navbar-brand" href="/">Markus Kirche</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+                    aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <a href="/posts/add" class="add-item" >
-        Add new post
-    </a>
-    <div class="item" th:each="post: ${posts}">
-
-       <div class="row">
-
-             <div class="col-6 border" >
-                 <img th:src="${post.getBase64Image()}"/>
-
-                 <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}">
-                     <div >
-                         <label >User</label><br/>
-                         <input  type="radio" id="email" name="email" th:each="user:${user}" th:value="${user.email}" th:text="${user.email}">
-
-                     </div>
-                     <div>
-                         <label>Rate post</label><br/>
-                         <input  type="radio" id="rating" name="rating" th:each="rate:${rating}" th:value="${rate.name}" th:text="${rate.name}">
-
-                     </div>
-                     <button type="submit" >Review</button>
-                 </form>
-
-               </div>
-           <div class="col-6 border">
-               <p th:text="${post.title}"></p>
-               <br />
-               <p th:text="${post.description}"></p>
-               <br />
-               <p th:text="${post.dateOfEvent}"></p>
-               <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}"
-               >
-                   <button type="submit" class="delete-item">Delete</button>
-               </form>
-               <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item"
-               >Edit </a>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarsExampleDefault">
 
 
-                </div>
+
+                <form class="form-inline my-2 my-lg-0">
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" aria-label="Small"
+                               aria-describedby="inputGroup-sizing-sm"
+                               placeholder="Search...">
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-secondary btn-number">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <ul class="nav navbar-nav navbar-right">
+
+                    <li class="nav-item" >
+                        <a class="nav-link" href="#">
+                            <th:block th:if="${#request.getRemoteUser() != null}"
+                                      th:text="${#request.getRemoteUser()}"></th:block>
+                        </a>
+                    </li>
+
+                    <li class="nav-item" >
+                        <a class="btn btn-light btn-sm ml-3" href="/logout">
+                            <i class="fa fa-shopping-cart"></i> Logout
+                        </a>
+                    </li>
+                    <li class="nav-item" >
+                        <a class="btn btn-light btn-sm ml-3" href="/login">
+                            <i class="fa fa-shopping-cart"></i> Login
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
-    <div class="newsletter-subscribe mt-5 container">
-        <div class="container">
-            <div class="intro">
-                <h2 class="text-center newsletter">Subscribe to our Newsletter</h2>
-            </div>
-            <form method="POST" th:action='@{/subscribers/save}' class="form-inline">
-                <div class="form-group">
-                    <input class="form-control" type="email" name="email" placeholder="Your Email">
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-primary" type="submit">Subscribe </button>
-                </div>
+    </nav>
+</header>
+
+<body >
+<div id="container">
+
+
+    <div class="row">
+
+        <div class="col">
+            <p style="font-size: 30px">Donate for church:</p>
+            <form method="POST" th:action="@{'/checkout'}"
+            >
+                <input type="number" name="amount">
+                <button class="btn btn-secondary btn-number" type="submit" >Confirm</button>
             </form>
-            <div th:if="${subscriberEmailError}">
-                <h1>Looks like you are already subscribed</h1>
+        </div>
+        <div class="col" id="calendar">
+            <a href="/calendar"  style="   font-size: 25px;" >VIEW THE CHURCH EVENTS</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- The form below should invoke the method ProductsController.showProducts -->
+        <a href="/posts/add" class="add-item" >
+            Add new post
+        </a>
+
+
+        <div class="item" th:each="post: ${posts}">
+            <div class="row">
+
+                <div class="col-6 border" >
+                    <img th:src="${post.getBase64Image()}"/>
+
+                    <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}"
+                    >
+
+
+
+                        <input type='hidden' th:if="${#request.getRemoteUser() != null}"
+                               th:value="${#request.getRemoteUser()}" name='email' />
+
+
+
+
+
+
+                        <div>
+                            <th:block th:if="${#request.getRemoteUser() != null}" >
+                                <label>Rate post</label><br/>
+
+                                <!-- For each category you should have one <option> like below  -->
+                                <!-- <input  type="radio" id="rating" name="rating" th:each="rate:${rating}" th:value="${rate.name}" th:text="${rate.name}">-->
+
+                                <select   id="rating" name="rating">
+                                    <option  th:each="rate:${rating}" th:text="${rate.name}" th:name="${rate.name}" th:value="${rate.name}" >RATE</option>
+                                </select>
+
+                                <button type="submit" >Review</button>
+                            </th:block>
+                        </div>
+
+
+
+
+
+                    </form>
+
+                </div>
+
+
+
+
+                <div class="col-6 border">
+                    <p th:text="${post.title}"></p>
+                    <br />
+                    <p th:text="${post.shortDescription}"></p>
+                    <br />
+                    <p th:text="${post.dateOfEvent}"></p>
+                    <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}"
+                    >
+                        <button type="submit" class="delete-item">Delete</button>
+                    </form>
+                    <!-- ProductsController.showEdit -->
+                    <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item"
+                    >Edit </a>
+
+                    <a th:href="@{'/posts/{id}/readMore' (id=${post.id})}" >Read More</a>
+                </div>
+
             </div>
 
-            <div th:if="${email}">
-                <h1>Thank you for subscribing</h1>
-            </div>
-            </div>
         </div>
 
-        <br />
 
-        <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
-            <input type="file" name="file"/>
-                <br/>
-                <br/>
+    </div>
 
-            <button type="submit">Submit</button>
-        </form>
-        <hr/>
-        <div th:if="${message}">
-            <h2 th:text="${message}"/>
-        </div>
-        <hr />
-        <a th:href="@{'/getPDF'}">Gemeindebrief</a>
 
 
 </div>
+</body>
+</html>
