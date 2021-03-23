@@ -76,7 +76,9 @@ public class SubscribersController {
             subscriber.setIsEnabled(true);
             subscribersService.save(subscriber.getEmail(), subscriber.getIsEnabled());
             emailSenderService.formRegistrationEmailForSubscription(subscriber.getEmail());
-            model.addAttribute("bodyContent", "accountVerified");
+
+
+            model.addAttribute("bodyContent", "subscriptionVerified");
             return "master-template";
         }
     }

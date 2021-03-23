@@ -49,6 +49,8 @@
                 </div>
             </div>
         </div>
+
+<!--    Subscription and upload file-->
     <div class="newsletter-subscribe mt-5 container">
         <div class="container">
             <div class="intro">
@@ -63,7 +65,7 @@
                 </div>
             </form>
             <div th:if="${subscriberEmailError}">
-                <h1>Looks like you are already subscribed</h1>
+                <h1>Looks like you are already subscribed. Please check your email</h1>
             </div>
 
             <div th:if="${email}">

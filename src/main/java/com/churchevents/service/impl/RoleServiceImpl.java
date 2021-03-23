@@ -2,6 +2,7 @@ package com.churchevents.service.impl;
 
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Role;
+import com.churchevents.model.exceptions.EmailNotFoundException;
 import com.churchevents.model.exceptions.InvalidEmailOrPasswordException;
 import com.churchevents.model.exceptions.InvalidEmailOrRoleException;
 import com.churchevents.repository.UserRepository;
@@ -35,7 +36,7 @@ public class RoleServiceImpl implements RoleService {
         }
 
         User user = this.userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(email));
+                .orElseThrow(() -> new EmailNotFoundException());
         user.setRole(role);
         this.userRepository.save(user);
 

@@ -3,6 +3,7 @@ package com.churchevents.model;
 
 import com.churchevents.model.enums.Role;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -22,13 +23,11 @@ public class User implements UserDetails {
 
     private String password;
 
-    private Boolean isSubscribed;
-
     @ManyToMany(fetch = FetchType.EAGER)
     private List<Post> posts;
 
     @Enumerated(value = EnumType.STRING)
-    private Role role;
+    private Role role = Role.ROLE_USER;
 
     private boolean isAccountNonExpired = true;
     private boolean isAccountNonLocked = true;
@@ -36,11 +35,9 @@ public class User implements UserDetails {
     private boolean isEnabled = false;
 
 
-    public User(String email, String password, Boolean isSubscribed, Role role) {
+    public User(String email, String password) {
         this.email = email;
         this.password = password;
-        this.isSubscribed = isSubscribed;
-        this.role = role;
     }
 
     public User() {

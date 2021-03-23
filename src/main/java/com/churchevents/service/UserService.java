@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService extends UserDetailsService {
-    User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role);
+    User register(String email, String password, String repeatPassword);
 
     @Override
     UserDetails loadUserByUsername(String s) throws UsernameNotFoundException;

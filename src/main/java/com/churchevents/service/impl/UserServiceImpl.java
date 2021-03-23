@@ -23,9 +23,9 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class UserServiceImpl implements UserService {
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private ConfirmationTokenRepository confirmationTokenRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ConfirmationTokenRepository confirmationTokenRepository;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, ConfirmationTokenRepository confirmationTokenRepository) {
         this.userRepository = userRepository;
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User register(String email, String password, String repeatPassword, Boolean isSubscribed, Role role) {
+    public User register(String email, String password, String repeatPassword) {
 
         if (email == null || email.isEmpty() || password == null || password.isEmpty())
             throw new InvalidEmailOrPasswordException();
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
             throw new PasswordsDoNotMatchException();
         if (this.userRepository.findByEmail(email).isPresent())
             throw new EmailAlreadyExistsException(email);
-        User user = new User(email, passwordEncoder.encode(password), isSubscribed, role);
+        User user = new User(email, passwordEncoder.encode(password));
         return userRepository.save(user);
     }
 
