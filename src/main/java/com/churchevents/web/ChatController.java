@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -53,10 +54,16 @@ public class ChatController {
     @GetMapping("/messages/{senderId}/{recipientId}")
     public ResponseEntity<?> findChatMessages(@PathVariable String senderId,
                                               @PathVariable String recipientId,
-                                              Pageable pageable) {
+                                              @RequestParam(required = false) Integer offset,
+                                              Pageable pageable,
+                                              Authentication authentication) {
+        String authenticatedUserId = ((User)authentication.getPrincipal()).getEmail();
+        if (!senderId.equals(authenticatedUserId)) {
+            return ResponseEntity.badRequest().build();
+        }
         List<ChatMessagePayload> chatMessages;
         try {
-            chatMessages = this.chatMessageService.findChatMessages(senderId, recipientId, pageable).getContent();
+            chatMessages = this.chatMessageService.findChatMessages(senderId, recipientId, pageable, offset).getContent();
         } catch (Exception exception) {
             return ResponseEntity.notFound().build();
         }
@@ -77,11 +84,11 @@ public class ChatController {
     }
 
     @PutMapping("/messages/{messageId}")
-    public ResponseEntity<?> updateMessageStatus(@PathVariable Long messageId) {
-        //todo: check if message to be updated has the recipientId of the currently logged in user
-
+    public ResponseEntity<?> updateMessageStatus(@PathVariable Long messageId,
+                                                 Authentication authentication) {
+        String authenticatedRecipientId = ((User)authentication.getPrincipal()).getEmail();
         try {
-            this.chatMessageService.updateMessageStatus(messageId);
+            this.chatMessageService.updateMessageStatus(messageId, authenticatedRecipientId);
         } catch (Exception exception) {
             return ResponseEntity.notFound().build();
         }

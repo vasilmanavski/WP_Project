@@ -27,6 +27,14 @@
             overflow-y: auto;
         }
 
+        .users_background {
+            background-color: white;
+        }
+
+        .users_background_selected {
+            background-color: #F0F0F0;
+        }
+
         .users {
             height: 40px;
             border: 1px black solid;
@@ -115,7 +123,7 @@
         <div class="col-4">
             <h2>All users</h2>
             <div id="all_users">
-                <div th:each="user : ${allUsers}" class="users" th:id="${user}">
+                <div th:each="user : ${allUsers}" class="users users_background" th:id="${user}">
                     <th:block th:text="${user}"></th:block>
                 </div>
             </div>
@@ -176,20 +184,23 @@
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
         if (newMessage.senderId === activeUser) {
+            const $messagediv = $("#messagediv");
             activeUserNewMessages++;
             $("#messagediv > ul").append(`<li class="other">${newMessage.content}</li>`);
-            $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+            $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
             updateMessageStatus(newMessage);
         } else {
             const theDiv = document.getElementById(newMessage.senderId);
             const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
             if(isNaN(divOldContent[1])) {
-                console.log("problem caused by number of message / onMessageReceived");
-                return;
+                const content = document.createTextNode("1");
+                theDiv.appendChild(content);
+                // console.log("problem caused by number of message / onMessageReceived");
+                // return;
+            } else {
+                const constCount = parseInt(divOldContent[1]) + 1;
+                theDiv.textContent = divOldContent[0] + " " + constCount;
             }
-            const constCount = parseInt(divOldContent[1]) + 1;
-            theDiv.textContent = divOldContent[0] + " " + constCount;
-
             document.getElementById("all_users").prepend(theDiv);
         }
     };
@@ -218,7 +229,14 @@
         if (page === 0) {
             $("#messagediv > ul").empty();
         }
-        $.ajax({url: `/messages/${currentUser}/${activeUser}?page=${page}&size=${size}&sort=${sort}`, success: function (result) {
+        let getMessagesUrl = `/messages/${currentUser}/${activeUser}?page=${page}&size=${size}&sort=${sort}`;
+        page += Math.floor(activeUserNewMessages/size);
+        activeUserNewMessages %= size;
+        if (activeUserNewMessages > 0) {
+            const offset = page * size + activeUserNewMessages;
+            getMessagesUrl = `/messages/${currentUser}/${activeUser}?offset=${offset}&size=${size}&sort=${sort}`;
+        }
+        $.ajax({url: getMessagesUrl, success: function (result) {
             console.log(result.length);
 
             if (result.length < size) {
@@ -230,14 +248,11 @@
 
             const theDiv = document.getElementById(`${activeUser}`);
             const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
-            if(isNaN(divOldContent[1])) {
-                console.log("problem caused by number of messages / loadMessages");
-                //return;
-            }
-            theDiv.textContent = divOldContent[0] + " " + 0;
+            theDiv.textContent = divOldContent[0];
 
-            const old_height = $("#messagediv").prop("scrollHeight");
-            const old_scroll = $("#messagediv").scrollTop();
+            const $messagediv = $("#messagediv");
+            const old_height = $messagediv.prop("scrollHeight");
+            const old_scroll = $messagediv.scrollTop();
             result.forEach(function (message) {
                 if (message.senderId === currentUser) {
                     $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
@@ -245,14 +260,15 @@
                     $("#messagediv > ul").prepend(`<li class="other">${message.content}</sub></li>`);
                 }
             });
-            $("#messagediv").scrollTop(old_scroll + $("#messagediv").prop("scrollHeight") - old_height);
+            $messagediv.scrollTop(old_scroll + $messagediv.prop("scrollHeight") - old_height);
 
             //sendSeenStatus();
         }});
     }
 
     const sendMessageFromInput = () => {
-        let userInput = $("#user_input").val().trim();
+        const $user_input = $("#user_input");
+        let userInput = $user_input.val().trim();
         if (userInput === '') {
             console.log("Cannot send empty message.");
             return;
@@ -261,11 +277,13 @@
             console.log("Active user is null.")
             return;
         }
-        $("#user_input").val("");
+        $user_input.val("");
         sendMessage(userInput);
 
+        const $messagediv = $("#messagediv");
+        activeUserNewMessages++;
         $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
-        $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+        $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
 
         const theDiv = document.getElementById(activeUser);
         document.getElementById("all_users").prepend(theDiv);
@@ -277,14 +295,17 @@
         allUserEmails.forEach(function (userEmail) {
             $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
                 console.log(userEmail, result);
-                const theDiv = document.getElementById(`${userEmail}`);
-                const content = document.createTextNode(result);
-                theDiv.appendChild(content);
+                if (result !== 0) {
+                    const theDiv = document.getElementById(`${userEmail}`);
+                    const content = document.createTextNode(result);
+                    theDiv.appendChild(content);
+                }
             }});
         });
 
         $("#send").click(function () {
-            let userInput = $("#user_input").val().trim();
+            const $user_input = $("#user_input");
+            let userInput = $user_input.val().trim();
             if (userInput === '') {
                 console.log("Cannot send empty message.");
                 return;
@@ -293,12 +314,13 @@
                 console.log("Active user is null.")
                 return;
             }
-            $("#user_input").val("");
+            $user_input.val("");
             sendMessage(userInput);
-
             activeUserNewMessages++;
+
+            const $messagediv = $("#messagediv");
             $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
-            $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+            $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
 
             const theDiv = document.getElementById(activeUser);
             document.getElementById("all_users").prepend(theDiv);
@@ -307,7 +329,8 @@
         $(".users").click(function () {
             if (activeUserDiv != null) {
                 if (activeUser !== $(this).attr("id")) {
-                    activeUserDiv.css("background-color", "white");
+                    activeUserDiv.removeClass("users_background_selected");
+                    activeUserDiv.addClass("users_background");
                     page = 0;
                     activeUserNewMessages = 0;
                     hasMoreMessages = true;
@@ -316,7 +339,8 @@
                 }
             }
             activeUserDiv = $(this);
-            activeUserDiv.css("background-color", "#F0F0F0");
+            activeUserDiv.removeClass("users_background");
+            activeUserDiv.addClass("users_background_selected");
             activeUser = activeUserDiv.attr("id");
             loadMessages();
         });
