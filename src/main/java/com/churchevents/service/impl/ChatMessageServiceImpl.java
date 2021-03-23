@@ -79,10 +79,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         Slice<ChatMessage> chatMessages = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageable);
 
         Slice<ChatMessage> chatMessagesToBeUpdated = chatMessages;
-        boolean areThereNewMessagesInCurrentBatch = chatMessagesToBeUpdated.getContent().stream().anyMatch(chatMessage -> chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED));
+        List<ChatMessage> chatMessagesWithUpdatedStatus =
+                chatMessagesToBeUpdated.getContent()
+                        .stream()
+                        .filter(chatMessage -> chatMessage.getRecipient().getEmail().equals(sender.getEmail())
+                                && chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED))
+                        .collect(Collectors.toList());
         int currentPage = pageable.getPageNumber();
-        while (areThereNewMessagesInCurrentBatch) {
-            List<ChatMessage> chatMessagesWithUpdatedStatus = chatMessagesToBeUpdated.getContent();
+        while (chatMessagesWithUpdatedStatus.size() > 0) {
             chatMessagesWithUpdatedStatus.forEach(chatMessage -> chatMessage.setMessageStatus(MessageStatus.SEEN));
             this.chatMessageRepository.saveAll(chatMessagesWithUpdatedStatus);
 
@@ -91,7 +95,12 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
             Pageable pageableCopy = PageRequest.of(++currentPage, pageable.getPageSize(), pageable.getSort());
             chatMessagesToBeUpdated = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageableCopy);
-            areThereNewMessagesInCurrentBatch = chatMessagesToBeUpdated.getContent().stream().anyMatch(chatMessage -> chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED));
+            chatMessagesWithUpdatedStatus =
+                    chatMessagesToBeUpdated.getContent()
+                            .stream()
+                            .filter(chatMessage -> chatMessage.getRecipient().getEmail().equals(sender.getEmail())
+                                    && chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED))
+                            .collect(Collectors.toList());
         }
 
         return chatMessages.map(chatMessage -> new ChatMessagePayload(

@@ -21,10 +21,22 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js"></script>
     <style>
+
+        #all_users {
+            height: 400px;
+            overflow-y: auto;
+        }
+
         .users {
+            height: 40px;
             border: 1px black solid;
             margin: 2px auto;
-            border-radius: 10px;
+            border-radius: 4px;
+
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            flex-direction: column;
         }
 
         .users:hover {
@@ -33,9 +45,11 @@
         }
 
         #messagediv {
+            border: 1px solid gray;
             display: block;
             height: 400px;
-            overflow-y: scroll;
+            overflow-y: auto;
+            border-radius: 5px;
         }
 
         ul{
@@ -60,7 +74,7 @@
 
         .me{
             float: right;
-            background: lightgreen;
+            background: #007bff;
             color: #fff;
         }
 
@@ -112,17 +126,12 @@
 
                 </ul>
             </div>
+            <div>
+                <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
+                <button id="send">Send message</button>
+            </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-8 offset-4">
-            <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
-            <button id="send">Send message</button>
-            <button id="load_more">Load more</button>
-        </div>
-    </div>
-
     <br/>
     <hr/>
 
@@ -140,6 +149,7 @@
     const sort = "timestamp,desc";
     let hasMoreMessages = true;
     const allUserEmails = [[${allUsers}]];
+    let activeUserNewMessages = 0;
 
     const connect = () => {
         //let sockjs = new SockJS("https://markuskirche.herokuapp.com/ws");
@@ -166,6 +176,7 @@
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
         if (newMessage.senderId === activeUser) {
+            activeUserNewMessages++;
             $("#messagediv > ul").append(`<li class="other">${newMessage.content}</li>`);
             $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
             updateMessageStatus(newMessage);
@@ -197,6 +208,12 @@
         console.log(err);
     };
 
+    const sendSeenStatus = () => {
+        const seenAck = {
+
+        };
+    };
+
     const loadMessages = () => {
         if (page === 0) {
             $("#messagediv > ul").empty();
@@ -219,15 +236,40 @@
             }
             theDiv.textContent = divOldContent[0] + " " + 0;
 
+            const old_height = $("#messagediv").prop("scrollHeight");
+            const old_scroll = $("#messagediv").scrollTop();
             result.forEach(function (message) {
                 if (message.senderId === currentUser) {
                     $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
                 } else {
-                    $("#messagediv > ul").prepend(`<li class="other">${message.content}</li>`);
+                    $("#messagediv > ul").prepend(`<li class="other">${message.content}</sub></li>`);
                 }
             });
+            $("#messagediv").scrollTop(old_scroll + $("#messagediv").prop("scrollHeight") - old_height);
+
+            //sendSeenStatus();
         }});
     }
+
+    const sendMessageFromInput = () => {
+        let userInput = $("#user_input").val().trim();
+        if (userInput === '') {
+            console.log("Cannot send empty message.");
+            return;
+        }
+        if (activeUser == null) {
+            console.log("Active user is null.")
+            return;
+        }
+        $("#user_input").val("");
+        sendMessage(userInput);
+
+        $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
+        $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
+
+        const theDiv = document.getElementById(activeUser);
+        document.getElementById("all_users").prepend(theDiv);
+    };
 
     $(document).ready(function () {
         connect();
@@ -254,6 +296,7 @@
             $("#user_input").val("");
             sendMessage(userInput);
 
+            activeUserNewMessages++;
             $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
             $("#messagediv").animate({ scrollTop: $("#messagediv").prop("scrollHeight")}, 1000);
 
@@ -266,6 +309,7 @@
                 if (activeUser !== $(this).attr("id")) {
                     activeUserDiv.css("background-color", "white");
                     page = 0;
+                    activeUserNewMessages = 0;
                     hasMoreMessages = true;
                 } else {
                     return;
@@ -277,10 +321,22 @@
             loadMessages();
         });
 
-        $("#load_more").click(function () {
-            if (activeUserDiv != null && hasMoreMessages) {
-                page++;
-                loadMessages();
+        $("#messagediv").scroll(function () {
+            if ($(this).scrollTop() === 0) {
+                if (activeUserDiv != null && hasMoreMessages) {
+                    page++;
+                    loadMessages();
+                }
+            }
+        });
+
+        $("#user_input").on("keypress", function (e) {
+            if (e.which === 13) {
+                $(this).attr("disabled", "disabled");
+                sendMessageFromInput();
+                $(this).val("");
+                $(this).removeAttr("disabled");
+                $(this).focus();
             }
         });
     });

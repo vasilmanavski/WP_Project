@@ -38,6 +38,11 @@ public class ChatController {
         );
     }
 
+//    @MessageMapping("/seen")
+//    public void sendSeenStatus() {
+//
+//    }
+
     @GetMapping("/chat")
     public String getChats(Model model, Authentication authentication) {
         User currentUser = (User)authentication.getPrincipal();
