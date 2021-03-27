@@ -8,7 +8,7 @@ import java.util.Date;
 
 @Data
 @Entity
-public class Post {
+public class Post{
 
 
     public String getShortDescription() {

@@ -67,9 +67,11 @@ public class PostsController {
         Rating [] ratings = Rating.values();
         List<User> users = userService.listAllUsers();
         List<Post> posts = this.postService.listAllPosts();
+        List<Post> lastPosts = this.postService.lastPosts();
 
         model.addAttribute("rating",ratings);
         model.addAttribute("posts",posts);
+        model.addAttribute("lastPosts", lastPosts);
         model.addAttribute("user",users);
         model.addAttribute("bodyContent", "list_posts");
         return "master-template";

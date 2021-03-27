@@ -52,7 +52,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
             mailMessage.setSubject("Complete your Registration!");
             mailMessage.setFrom("EmKCologne@mail.com");
             mailMessage.setText("To confirm your account, please click here : "
-                    + "http://localhost:8080/confirm-account?token=" + confirmationToken.getConfirmationToken());
+                    + "https://markuskirche.herokuapp.com/confirm-account?token=" + confirmationToken.getConfirmationToken());
 
             javaMailSender.send(mailMessage);
             this.applicationEventPublisher.publishEvent(new EmailSentEvent(user));
@@ -74,7 +74,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
             mailMessage.setSubject("Complete your Subscription!");
             mailMessage.setFrom("EmKCologne@mail.com");
             mailMessage.setText("To confirm your subscription, please click here : "
-                    + "http://localhost:8080/subscribers/confirm-subscription?token=" + subscriptionToken.getSubscriptionToken());
+                    + "https://markuskirche.herokuapp.com/subscribers/confirm-subscription?token=" + subscriptionToken.getSubscriptionToken());
 
             javaMailSender.send(mailMessage);
             this.applicationEventPublisher.publishEvent(new SubscriberEmailSentEvent(subscriber));
@@ -104,12 +104,12 @@ public class EmailSenderServiceImpl implements EmailSenderService {
                         + "<img src='cid:rightSideImage' style='float:right;width:50px;height:50px;'/>"
                         + "<div>Successful subscription to our newsletter.</div>"
                         + "</div>"
-                        + "You can unsubscribe at any time by clicking the following link: http://localhost:8080/subscribers/unsubscribe"
+                        + "You can unsubscribe at any time by clicking the following link: https://markuskirche.herokuapp.com/subscribers/unsubscribe"
                         + "</div></body>"
                         + "</html>", true
         );
         helper.addInline("rightSideImage",
-                new File("src/main/resources/images/emk-logo.jpg"));
+                new File("src/main/resources/static/images/emk-logo.jpg"));
 
         javaMailSender.send(message);
 
@@ -137,7 +137,7 @@ public class EmailSenderServiceImpl implements EmailSenderService {
                          "We have new article in our newsletter. "
                         + "You can check it out by clicking on the following link: "
 
-                        + "http://localhost:8080/getPDF"
+                        + "https://markuskirche.herokuapp.com/getPDF"
 
                 );
                 javaMailSender.send(message);

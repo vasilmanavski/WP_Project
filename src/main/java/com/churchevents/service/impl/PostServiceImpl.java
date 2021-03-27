@@ -7,6 +7,8 @@ import com.churchevents.repository.PostRepository;
 import com.churchevents.service.PostService;
 
 import javassist.bytecode.ByteArray;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,9 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -33,7 +35,15 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<Post> listAllPosts() {
-        return this.postRepository.findAll();
+        List<Post> posts = this.postRepository.findAll();
+        sortPosts(posts);
+
+        return posts;
+    }
+
+    @Override
+    public Page<Post> findAllWithPagination(Pageable pageable) {
+        return this.postRepository.findAll(pageable);
     }
 
     @Override
@@ -95,19 +105,21 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(InvalidPostIdException::new);
     }
 
+    @Override
+    public List<Post> lastPosts() {
+        List<Post> posts = this.postRepository.findAll();
 
+        sortPosts(posts);
+        return posts.stream().limit(3).collect(Collectors.toList());
+    }
+
+    public void sortPosts(List<Post> posts){
+        posts.sort(Comparator.comparing(Post::getDateCreated).reversed());
+    }
 
     public Post click(Long id) {
         Post post = this.postRepository.findById(id).get();
           return  this.postRepository.save(post);
     }
-
-
-   /* @Override
-    public Post post_clicked(Long id,Integer postClicked){
-       Post post = new Post(id,postClicked);
-        return this.postRepository.save(post);
-    }*/
-
 
 }
