@@ -15,7 +15,7 @@ public interface ChatMessageService {
 
     Long countNewMessages(String senderId, String recipientId);
 
-    void updateMessageStatus(Long chatMessageId, String authenticatedUserId);
+    void updateMessageStatus(Long chatMessageId, String authenticatedUserIdz);
 
     List<String> allUserEmails(User currentUser);
 }

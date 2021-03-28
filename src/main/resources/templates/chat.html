@@ -22,8 +22,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.js"></script>
     <style>
 
-        #all_users {
-            height: 400px;
+        #all_users, #all_group_chats {
+            height: 200px;
             overflow-y: auto;
         }
 
@@ -35,7 +35,7 @@
             background-color: #F0F0F0;
         }
 
-        .users {
+        .users, .group_chats {
             height: 40px;
             border: 1px black solid;
             margin: 2px auto;
@@ -47,7 +47,7 @@
             flex-direction: column;
         }
 
-        .users:hover {
+        .users:hover, .group_chats:hover {
             background-color: darkgrey;
             cursor: pointer;
         }
@@ -120,12 +120,16 @@
 <body>
 <div class="container">
     <div class="row">
-        <div class="col-4">
+        <div class="col-4" id="chats">
             <h2>All users</h2>
             <div id="all_users">
                 <div th:each="user : ${allUsers}" class="users users_background" th:id="${user}">
                     <th:block th:text="${user}"></th:block>
                 </div>
+            </div>
+            <h2>Group Chats</h2>
+            <div id="all_group_chats">
+
             </div>
         </div>
         <div class="col-8">
@@ -135,13 +139,45 @@
                 </ul>
             </div>
             <div>
-                <label for="user_input">Message: </label><input type="text" id="user_input" placeholder="Write your message..."/>
+                <input type="text" id="user_input" placeholder="Write your message..."/>
                 <button id="send">Send message</button>
             </div>
         </div>
     </div>
     <br/>
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+        Create Group Chat
+    </button>
     <hr/>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">New Group Chat</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="/chat/createGroupChat" id="idForm">
+                        <input type="text" name="groupChatName" placeholder="Enter group chat name"/><br/>
+                        <label for="invitedUsers">Choose invites:</label><br/>
+                        <select id="invitedUsers" name="invitedUserIds" multiple="multiple">
+                            <option th:each="user : ${allUsers}" th:value="${user}" th:text="${user}"></option>
+                        </select><br/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="submitIdForm" type="button" class="btn btn-primary" data-dismiss="modal">
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <span th:text ="${#authentication.getPrincipal().getEmail()}"></span>
 </div>
@@ -175,6 +211,12 @@
         );
     };
 
+    const onError = (err) => {
+        console.log(err);
+    };
+
+    connect();
+
     const updateMessageStatus = (message) => {
         $.ajax({url: `/messages/${message.id}`, method: "PUT", success: function (result) {
             console.log(result);
@@ -193,7 +235,7 @@
             const theDiv = document.getElementById(newMessage.senderId);
             const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
             if(isNaN(divOldContent[1])) {
-                const content = document.createTextNode("1");
+                const content = document.createTextNode(" 1");
                 theDiv.appendChild(content);
                 // console.log("problem caused by number of message / onMessageReceived");
                 // return;
@@ -215,10 +257,6 @@
         stompClient.send("/app/chat", {}, JSON.stringify(message));
     };
 
-    const onError = (err) => {
-        console.log(err);
-    };
-
     const sendSeenStatus = () => {
         const seenAck = {
 
@@ -236,6 +274,8 @@
             const offset = page * size + activeUserNewMessages;
             getMessagesUrl = `/messages/${currentUser}/${activeUser}?offset=${offset}&size=${size}&sort=${sort}`;
         }
+
+        $("#messagediv").off("scroll", scrollEventHandler);
         $.ajax({url: getMessagesUrl, success: function (result) {
             console.log(result.length);
 
@@ -253,6 +293,7 @@
             const $messagediv = $("#messagediv");
             const old_height = $messagediv.prop("scrollHeight");
             const old_scroll = $messagediv.scrollTop();
+
             result.forEach(function (message) {
                 if (message.senderId === currentUser) {
                     $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
@@ -261,9 +302,10 @@
                 }
             });
             $messagediv.scrollTop(old_scroll + $messagediv.prop("scrollHeight") - old_height);
-
             //sendSeenStatus();
-        }});
+        }}).done(function() {
+            $("#messagediv").on("scroll", scrollEventHandler);
+        });
     }
 
     const sendMessageFromInput = () => {
@@ -289,8 +331,29 @@
         document.getElementById("all_users").prepend(theDiv);
     };
 
+    const scrollEventHandler = () => {
+        if ($("#messagediv").scrollTop() === 0) {
+            if (activeUserDiv != null && hasMoreMessages) {
+                page++;
+                loadMessages();
+            }
+        }
+    };
+
     $(document).ready(function () {
-        connect();
+        $.ajax({
+            url: "/chat/groupChats",
+            success: function (data) {
+                console.log(data.length);
+
+                const $allGroupChats = $("#all_group_chats");
+                data.forEach(function (groupChat) {
+                    $allGroupChats.append(`<div id='${groupChat.id}' class="group_chats users_background">${groupChat.name}</div>`);
+                });
+            }
+        });
+
+        //connect();
 
         allUserEmails.forEach(function (userEmail) {
             $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
@@ -345,14 +408,7 @@
             loadMessages();
         });
 
-        $("#messagediv").scroll(function () {
-            if ($(this).scrollTop() === 0) {
-                if (activeUserDiv != null && hasMoreMessages) {
-                    page++;
-                    loadMessages();
-                }
-            }
-        });
+        $("#messagediv").on("scroll", scrollEventHandler);
 
         $("#user_input").on("keypress", function (e) {
             if (e.which === 13) {
@@ -362,6 +418,29 @@
                 $(this).removeAttr("disabled");
                 $(this).focus();
             }
+        });
+
+        // Group Chat
+        
+        $("#submitIdForm").click(function () {
+            $("#idForm").submit();
+        });
+
+        $("#idForm").submit(function (e) {
+            e.preventDefault();
+
+            const $form = $(this);
+            const url = $form.attr('action');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: $form.serialize(),
+                success: function (groupChat) {
+                    console.log(groupChat);
+                    $("#all_group_chats").append(`<div id='${groupChat.id}' class="group_chats users_background">${groupChat.name}</div>`);
+                }
+            });
         });
     });
 </script>

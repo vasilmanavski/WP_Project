@@ -1,8 +1,10 @@
 package com.churchevents.web;
 
 import com.churchevents.model.ChatMessagePayload;
+import com.churchevents.model.GroupChat;
 import com.churchevents.model.User;
 import com.churchevents.service.ChatMessageService;
+import com.churchevents.service.GroupChatService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -11,10 +13,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,11 +22,14 @@ public class ChatController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatMessageService chatMessageService;
+    private final GroupChatService groupChatService;
 
     public ChatController(SimpMessagingTemplate simpMessagingTemplate,
-                          ChatMessageService chatMessageService) {
+                          ChatMessageService chatMessageService,
+                          GroupChatService groupChatService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.chatMessageService = chatMessageService;
+        this.groupChatService = groupChatService;
     }
 
     @MessageMapping("/chat")
@@ -38,11 +40,6 @@ public class ChatController {
                 chatMessageSaved
         );
     }
-
-//    @MessageMapping("/seen")
-//    public void sendSeenStatus() {
-//
-//    }
 
     @GetMapping("/chat")
     public String getChats(Model model, Authentication authentication) {
@@ -94,4 +91,31 @@ public class ChatController {
         }
         return ResponseEntity.ok(true);
     }
+
+    ///////////////////////////// GroupChat /////////////////////////////
+
+    @GetMapping("/chat/groupChats")
+    public ResponseEntity<?> getGroupChats(Authentication authentication) {
+        User currentUser = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(this.groupChatService.getGroupChatsForUser(currentUser));
+    }
+
+    @PostMapping("/chat/createGroupChat")
+    public ResponseEntity<?> createGroupChat(@RequestParam String groupChatName,
+                                             @RequestParam String[] invitedUserIds,
+                                             Authentication authentication) {
+        User currentUser = (User)authentication.getPrincipal();
+        GroupChat groupChat;
+        try {
+            groupChat = this.groupChatService.createGroupChat(groupChatName, currentUser, invitedUserIds);
+        } catch (Exception exception) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(groupChat);
+    }
+
+    //    @MessageMapping("/seen")
+    //    public void sendSeenStatus() {
+    //
+    //    }
 }

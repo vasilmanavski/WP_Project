@@ -68,16 +68,18 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         User recipient = this.userRepository.findById(chatMessagePayload.getRecipientId()).orElseThrow();
         ChatMessage chatMessage = new ChatMessage(sender, recipient, chatMessagePayload.getContent(), chatMessagePayload.getTimestamp());
         this.chatMessageRepository.save(chatMessage);
-        return new ChatMessagePayload(chatMessage.getId(), chatMessage.getSender().getEmail(),
-                chatMessage.getRecipient().getEmail(),
-                chatMessage.getContent(), chatMessage.getTimestamp());
+        chatMessagePayload.setId(chatMessage.getId());
+        return chatMessagePayload;
+//        return new ChatMessagePayload(chatMessage.getId(), chatMessage.getSender().getEmail(),
+//                chatMessage.getRecipient().getEmail(),
+//                chatMessage.getContent(), chatMessage.getTimestamp());
     }
 
     @Override
     @Transactional
     public Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable, Integer offset) {
         Pageable pageableCopy = pageable;
-        if (offset != null) {
+        if (offset != null && offset != 0) {
             pageableCopy = new OffsetBasedPageRequest(offset, pageable.getPageSize(), pageable.getSort());
         }
         User sender = this.userRepository.findById(senderId).orElseThrow();
@@ -100,7 +102,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 break;
             }
 
-            if (offset != null) {
+            if (offset != null && offset != 0) {
                 pageableCopy = new OffsetBasedPageRequest((int)(pageableCopy.getOffset() + pageableCopy.getPageSize()), pageableCopy.getPageSize(), pageableCopy.getSort());
             } else {
                 pageableCopy = PageRequest.of(pageableCopy.getPageNumber() + 1, pageableCopy.getPageSize(), pageableCopy.getSort());
