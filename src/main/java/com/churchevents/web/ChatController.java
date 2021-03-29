@@ -111,11 +111,49 @@ public class ChatController {
         } catch (Exception exception) {
             return ResponseEntity.notFound().build();
         }
+
+        List<String> users = this.groupChatService.userIdsThatBelongToGroupChat(currentUser, groupChat);
+        users.forEach(user -> this.simpMessagingTemplate.convertAndSendToUser(
+                user, "/queue/groupChat", groupChat
+        ));
         return ResponseEntity.ok(groupChat);
     }
 
-    //    @MessageMapping("/seen")
-    //    public void sendSeenStatus() {
-    //
-    //    }
+    @GetMapping("/group/{userId}/{groupChatId}")
+    public ResponseEntity<?> getGroupChatMessages(@PathVariable String userId,
+                                                  @PathVariable Long groupChatId,
+                                                  Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!userId.equals(authenticatedUser.getEmail())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatMessagePayload> chatMessages;
+        try {
+            chatMessages = this.groupChatService.findChatMessages(authenticatedUser, groupChatId);
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(chatMessages);
+    }
+
+    @MessageMapping("/group")
+    public void groupChatCreated(@Payload ChatMessagePayload chatMessagePayload,
+                                 Authentication authentication) {
+        ChatMessagePayload chatMessageSaved = this.groupChatService.saveGroupMessage(chatMessagePayload);
+        User currentUser = (User)authentication.getPrincipal();
+
+        GroupChat groupChat;
+        List<String> users;
+        try {
+            groupChat = this.groupChatService.findGroupById(Long.parseLong(chatMessagePayload.getRecipientId()));
+            users = this.groupChatService.userIdsThatBelongToGroupChat(currentUser, groupChat);
+        } catch (Exception exception) {
+            return;
+        }
+
+        users.forEach(user -> this.simpMessagingTemplate.convertAndSendToUser(
+                user, "/queue/groupChat", chatMessageSaved
+        ));
+    }
 }

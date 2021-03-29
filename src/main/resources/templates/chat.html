@@ -27,6 +27,10 @@
             overflow-y: auto;
         }
 
+        .group_chats {
+
+        }
+
         .users_background {
             background-color: white;
         }
@@ -35,7 +39,7 @@
             background-color: #F0F0F0;
         }
 
-        .users, .group_chats {
+        .users {
             height: 40px;
             border: 1px black solid;
             margin: 2px auto;
@@ -47,7 +51,7 @@
             flex-direction: column;
         }
 
-        .users:hover, .group_chats:hover {
+        .users:hover {
             background-color: darkgrey;
             cursor: pointer;
         }
@@ -69,7 +73,7 @@
         ul li{
             display:inline-block;
             clear: both;
-            padding: 20px;
+            padding: 10px;
             border-radius: 30px;
             margin-bottom: 2px;
             font-family: Helvetica, Arial, sans-serif;
@@ -209,6 +213,26 @@
             "/user/" + currentUser + "/queue/messages",
             onMessageReceived
         );
+        stompClient.subscribe(
+            "/user/" + currentUser + "/queue/groupChat",
+            onGroupMessageReceived
+        );
+    };
+
+    const onGroupMessageReceived = (msg) => {
+        const newMessage = JSON.parse(msg.body);
+        if (newMessage.name !== undefined && newMessage.id !== undefined) {
+            $("#all_group_chats").prepend(`<div id='${newMessage.id}' class="users users_background">${newMessage.name}</div>`);
+        } else if(newMessage.senderId !== undefined && newMessage.recipientId !== undefined && newMessage.content !== undefined) {
+            if (newMessage.recipientId === activeUser) {
+                const $messagediv = $("#messagediv");
+                activeUserNewMessages++;
+                $("#messagediv > ul").append(`<li class="other">${newMessage.content}</li>`);
+                $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
+            } else {
+                //todo
+            }
+        }
     };
 
     const onError = (err) => {
@@ -225,6 +249,7 @@
 
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
+        console.log(newMessage);
         if (newMessage.senderId === activeUser) {
             const $messagediv = $("#messagediv");
             activeUserNewMessages++;
@@ -254,7 +279,12 @@
             content: userInput,
             timestamp: new Date()
         };
-        stompClient.send("/app/chat", {}, JSON.stringify(message));
+
+        if (!activeUserDiv.hasClass("group_chats")) {
+            stompClient.send("/app/chat", {}, JSON.stringify(message));
+        } else {
+            stompClient.send("/app/group", {}, JSON.stringify(message));
+        }
     };
 
     const sendSeenStatus = () => {
@@ -298,7 +328,7 @@
                 if (message.senderId === currentUser) {
                     $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
                 } else {
-                    $("#messagediv > ul").prepend(`<li class="other">${message.content}</sub></li>`);
+                    $("#messagediv > ul").prepend(`<li class="other">${message.content}</li>`);
                 }
             });
             $messagediv.scrollTop(old_scroll + $messagediv.prop("scrollHeight") - old_height);
@@ -306,7 +336,27 @@
         }}).done(function() {
             $("#messagediv").on("scroll", scrollEventHandler);
         });
-    }
+    };
+
+    const loadGroupMessages = () => {
+        if (page === 0) {
+            $("#messagediv > ul").empty();
+        }
+        $.ajax({
+            url: `/group/${currentUser}/${activeUser}`,
+            success: function (result) {
+                console.log(result);
+
+                result.forEach(function (message) {
+                    if (message.senderId === currentUser) {
+                        $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
+                    } else {
+                        $("#messagediv > ul").prepend(`<li class="other"><span style="font-size: xx-small;color: grey;">${message.senderId}</span><br>${message.content}</li>`);
+                    }
+                });
+            }
+        });
+    };
 
     const sendMessageFromInput = () => {
         const $user_input = $("#user_input");
@@ -328,14 +378,20 @@
         $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
 
         const theDiv = document.getElementById(activeUser);
-        document.getElementById("all_users").prepend(theDiv);
+        if (!activeUserDiv.hasClass("group_chats")) {
+            document.getElementById("all_users").prepend(theDiv);
+        } else {
+            const theDiv = document.getElementById(activeUser);
+            document.getElementById("all_group_chats").prepend(theDiv);
+        }
     };
 
     const scrollEventHandler = () => {
         if ($("#messagediv").scrollTop() === 0) {
             if (activeUserDiv != null && hasMoreMessages) {
                 page++;
-                loadMessages();
+                // todo
+                //loadMessages();
             }
         }
     };
@@ -348,7 +404,7 @@
 
                 const $allGroupChats = $("#all_group_chats");
                 data.forEach(function (groupChat) {
-                    $allGroupChats.append(`<div id='${groupChat.id}' class="group_chats users_background">${groupChat.name}</div>`);
+                    $allGroupChats.append(`<div id='${groupChat.id}' class="users users_background group_chats">${groupChat.name}</div>`);
                 });
             }
         });
@@ -357,7 +413,7 @@
 
         allUserEmails.forEach(function (userEmail) {
             $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
-                console.log(userEmail, result);
+                //console.log(userEmail, result);
                 if (result !== 0) {
                     const theDiv = document.getElementById(`${userEmail}`);
                     const content = document.createTextNode(result);
@@ -386,10 +442,15 @@
             $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
 
             const theDiv = document.getElementById(activeUser);
-            document.getElementById("all_users").prepend(theDiv);
+            if (!activeUserDiv.hasClass("group_chats")) {
+                document.getElementById("all_users").prepend(theDiv);
+            } else {
+                const theDiv = document.getElementById(activeUser);
+                document.getElementById("all_group_chats").prepend(theDiv);
+            }
         });
 
-        $(".users").click(function () {
+        $(document).on("click", ".users", function () {
             if (activeUserDiv != null) {
                 if (activeUser !== $(this).attr("id")) {
                     activeUserDiv.removeClass("users_background_selected");
@@ -405,7 +466,12 @@
             activeUserDiv.removeClass("users_background");
             activeUserDiv.addClass("users_background_selected");
             activeUser = activeUserDiv.attr("id");
-            loadMessages();
+
+            if (!activeUserDiv.hasClass("group_chats")) {
+                loadMessages();
+            } else {
+                loadGroupMessages();
+            }
         });
 
         $("#messagediv").on("scroll", scrollEventHandler);
@@ -421,7 +487,7 @@
         });
 
         // Group Chat
-        
+
         $("#submitIdForm").click(function () {
             $("#idForm").submit();
         });
@@ -432,13 +498,15 @@
             const $form = $(this);
             const url = $form.attr('action');
 
+            console.log("#idForm", $form);
+
             $.ajax({
                 type: 'POST',
                 url: url,
                 data: $form.serialize(),
                 success: function (groupChat) {
                     console.log(groupChat);
-                    $("#all_group_chats").append(`<div id='${groupChat.id}' class="group_chats users_background">${groupChat.name}</div>`);
+                    $("#all_group_chats").prepend(`<div id='${groupChat.id}' class="users users_background group_chats">${groupChat.name}</div>`);
                 }
             });
         });

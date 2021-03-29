@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,13 +67,14 @@ public class GroupChatServiceImpl implements GroupChatService {
         }
 
         //todo: if user left group chat, return messages up to that date, else return "all" (pagination?)
-        return this.groupChatMessageRepository.findAllBySenderAndGroupChat(user, groupChat)
+        return this.groupChatMessageRepository.findAllByGroupChat(groupChat)
                 .stream()
                 .map(groupChatMessage -> new ChatMessagePayload(
                         groupChatMessage.getId(), groupChatMessage.getSender().getEmail(),
                         groupChatMessage.getGroupChat().getId().toString(), groupChatMessage.getContent(),
                         groupChatMessage.getTimestamp()
                 ))
+                .sorted(Comparator.comparing(ChatMessagePayload::getTimestamp).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -80,11 +82,30 @@ public class GroupChatServiceImpl implements GroupChatService {
     public ChatMessagePayload saveGroupMessage(ChatMessagePayload chatMessagePayload) {
         User user = this.userRepository.findById(chatMessagePayload.getSenderId()).orElseThrow();
         GroupChat groupChat = this.groupChatRepository.findById(Long.parseLong(chatMessagePayload.getRecipientId())).orElseThrow();
+
+        if (this.usersGroupChatsRepository.findByUserAndGroupChat(user, groupChat).isEmpty()) {
+            throw new InvalidArgumentsException();
+        }
+
         GroupChatMessage groupChatMessage = new GroupChatMessage(
                 chatMessagePayload.getContent(), chatMessagePayload.getTimestamp(), user, groupChat
         );
         this.groupChatMessageRepository.save(groupChatMessage);
         chatMessagePayload.setId(groupChatMessage.getId());
         return chatMessagePayload;
+    }
+
+    @Override
+    public List<String> userIdsThatBelongToGroupChat(User creator, GroupChat groupChat) {
+        return this.usersGroupChatsRepository.findAllByGroupChat(groupChat)
+                .stream()
+                .map(usersGroupChats -> usersGroupChats.getUser().getEmail())
+                .filter(userId -> !userId.equals(creator.getEmail()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public GroupChat findGroupById(Long groupChatId) {
+        return this.groupChatRepository.findById(groupChatId).orElseThrow();
     }
 }

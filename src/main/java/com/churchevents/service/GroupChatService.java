@@ -15,4 +15,8 @@ public interface GroupChatService {
     List<ChatMessagePayload> findChatMessages(User user, Long groupChatId);
 
     ChatMessagePayload saveGroupMessage(ChatMessagePayload chatMessagePayload);
+
+    List<String> userIdsThatBelongToGroupChat(User creator, GroupChat groupChat);
+
+    GroupChat findGroupById(Long groupChatId);
 }

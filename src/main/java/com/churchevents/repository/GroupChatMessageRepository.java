@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface GroupChatMessageRepository extends JpaRepository<GroupChatMessage, Long> {
 
-    List<GroupChatMessage> findAllBySenderAndGroupChat(User user, GroupChat groupChat);
+    List<GroupChatMessage> findAllByGroupChat(GroupChat groupChat);
 }

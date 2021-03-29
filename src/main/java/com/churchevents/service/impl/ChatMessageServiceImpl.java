@@ -70,9 +70,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         this.chatMessageRepository.save(chatMessage);
         chatMessagePayload.setId(chatMessage.getId());
         return chatMessagePayload;
-//        return new ChatMessagePayload(chatMessage.getId(), chatMessage.getSender().getEmail(),
-//                chatMessage.getRecipient().getEmail(),
-//                chatMessage.getContent(), chatMessage.getTimestamp());
     }
 
     @Override
