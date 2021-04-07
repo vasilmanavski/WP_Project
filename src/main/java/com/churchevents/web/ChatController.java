@@ -122,6 +122,8 @@ public class ChatController {
     @GetMapping("/group/{userId}/{groupChatId}")
     public ResponseEntity<?> getGroupChatMessages(@PathVariable String userId,
                                                   @PathVariable Long groupChatId,
+                                                  @RequestParam(required = false) Integer offset,
+                                                  Pageable pageable,
                                                   Authentication authentication) {
         User authenticatedUser = (User)authentication.getPrincipal();
         if (!userId.equals(authenticatedUser.getEmail())) {
@@ -130,7 +132,7 @@ public class ChatController {
 
         List<ChatMessagePayload> chatMessages;
         try {
-            chatMessages = this.groupChatService.findChatMessages(authenticatedUser, groupChatId);
+            chatMessages = this.groupChatService.findChatMessages(authenticatedUser, groupChatId, pageable, offset).getContent();
         } catch (Exception exception) {
             return ResponseEntity.badRequest().build();
         }
@@ -152,8 +154,38 @@ public class ChatController {
             return;
         }
 
-        users.forEach(user -> this.simpMessagingTemplate.convertAndSendToUser(
-                user, "/queue/groupChat", chatMessageSaved
-        ));
+        users.forEach(user -> {
+            boolean shouldUserReceiveMessage;
+            try {
+                shouldUserReceiveMessage = this.groupChatService.userShouldReceiveMessage(user, groupChat);
+            } catch (Exception exception) {
+                shouldUserReceiveMessage = false;
+            }
+
+            if (shouldUserReceiveMessage) {
+                this.simpMessagingTemplate.convertAndSendToUser(
+                        user, "/queue/groupChat", chatMessageSaved
+                );
+            }
+        });
+    }
+
+    @GetMapping("/group/{userId}/{groupChatId}/getParticipants")
+    public ResponseEntity<?> getGroupChatParticipants(@PathVariable String userId,
+                                                      @PathVariable Long groupChatId,
+                                                      Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!userId.equals(authenticatedUser.getEmail())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<String> participants;
+        try {
+            GroupChat groupChat = this.groupChatService.findGroupById(groupChatId);
+            participants = this.groupChatService.userIdsThatBelongToGroupChat(authenticatedUser, groupChat);
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(participants);
     }
 }
