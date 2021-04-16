@@ -25,7 +25,6 @@ public class FileServiceImpl implements FileService {
             Path copyLocation = Paths
                     .get(uploadDir + File.separator + StringUtils.cleanPath(file.getOriginalFilename()));
             Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
-            file.transferTo(copyLocation);
 
             Files.move(copyLocation, Paths.get("src/main/resources/templates/pdf/Newsletter.pdf"), StandardCopyOption.REPLACE_EXISTING);
 

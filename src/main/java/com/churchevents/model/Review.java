@@ -2,6 +2,8 @@ package com.churchevents.model;
 
 import com.churchevents.model.enums.Rating;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 

@@ -22,9 +22,6 @@ public class User implements UserDetails {
 
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Post> posts;
-
     @Enumerated(value = EnumType.STRING)
     private Role role = Role.ROLE_USER;
 
@@ -87,14 +84,6 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
     }
 
     public Role getRole() {

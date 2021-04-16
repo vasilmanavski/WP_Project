@@ -10,6 +10,8 @@ import com.churchevents.repository.UserRepository;
 import com.churchevents.service.ReviewService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ReviewServiceImpl implements ReviewService {
 

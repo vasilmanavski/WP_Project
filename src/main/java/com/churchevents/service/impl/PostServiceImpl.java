@@ -1,21 +1,15 @@
 package com.churchevents.service.impl;
 
 import com.churchevents.model.Post;
+import com.churchevents.model.Review;
 import com.churchevents.model.enums.Type;
 import com.churchevents.model.exceptions.InvalidPostIdException;
 import com.churchevents.repository.PostRepository;
+import com.churchevents.repository.ReviewRepository;
 import com.churchevents.service.PostService;
 
-import javassist.bytecode.ByteArray;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.sql.Blob;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,9 +22,11 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
+    private final ReviewRepository reviewRepository;
 
-    public PostServiceImpl(PostRepository postRepository) {
+    public PostServiceImpl(PostRepository postRepository, ReviewRepository reviewRepository) {
         this.postRepository = postRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @Override
@@ -94,8 +90,20 @@ public class PostServiceImpl implements PostService {
     @Override
     public Post delete(Long id) {
         Post post = this.findById(id);
+        this.deleteByPost(post);
         this.postRepository.delete(post);
         return post;
+    }
+
+    @Override
+    public void deleteByPost(Post post) {
+        List<Review> reviews = this.reviewRepository.findAllByPost(post);
+
+        for(Review review : reviews){
+            review.setUser(null);
+            review.setPost(null);
+            this.reviewRepository.delete(review);
+        }
     }
 
     @Override
@@ -116,6 +124,8 @@ public class PostServiceImpl implements PostService {
     public void sortPosts(List<Post> posts){
         posts.sort(Comparator.comparing(Post::getDateCreated).reversed());
     }
+
+
 
     public Post click(Long id) {
         Post post = this.postRepository.findById(id).get();

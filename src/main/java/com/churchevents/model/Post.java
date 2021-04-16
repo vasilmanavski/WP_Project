@@ -4,7 +4,10 @@ import com.churchevents.model.enums.Type;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.Optional;
 
 @Data
 @Entity
@@ -46,6 +49,7 @@ public class Post{
 
     private Integer eventGoing;
 
+//    private User email;
 
     @Enumerated(EnumType.STRING)
     private Type type;
@@ -103,7 +107,20 @@ public class Post{
 
 
 
+    public Integer getDayOfEvent(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(this.getDateOfEvent());
 
+        return calendar.get(calendar.DAY_OF_MONTH);
+    }
+
+    public String getMonthOfEvent(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(this.getDateOfEvent());
+
+        SimpleDateFormat month_date = new SimpleDateFormat("MMM");
+        return month_date.format(calendar.getTime());
+    }
 
     public Date getDateOfEvent() {
         return dateOfEvent;
@@ -145,4 +162,5 @@ public class Post{
        this.eventGoing = 0;
        this.postClicked = 0;
     }
+
 }

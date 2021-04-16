@@ -111,7 +111,8 @@
 <div class="row">
 
     <div class="col-8">
-        <section th:replace="home_fragments/show_posts"></section>
+<!--        <section th:replace="home_fragments/show_posts"></section>-->
+        <section th:replace="home_fragments/test_list_posts"></section>
     </div>
 
     <div class="col-4">
@@ -128,9 +129,9 @@
         <div class="row push-top">
             <section class="col-md-6" th:replace="home_fragments/calendar"> </section>
         </div>
-
     </div>
 </div>
-
-
+<div class="push-top">
+    <section th:replace="home_fragments/social-networks"></section>
+</div>
 </html>

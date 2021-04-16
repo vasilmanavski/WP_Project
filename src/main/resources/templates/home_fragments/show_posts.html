@@ -1,51 +1,41 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-<div class="container pt-6 shadow p-3 mb-5 bg-white rounded" style="margin-top: 2%">
-    <a href="/posts/add" class="add-item" >
-        Add new post
-    </a>
+<a href="/posts/add" class="add-item btn btn-dark" >
+    Add new post
+</a>
+<div class="container border border-secondary" style="margin-top: 2%">
+    <div th:each="post: ${posts}" class="row" style="margin-top: 2%">
+        <div class="col-4">
+            <img class="card-img-top" th:src="${post.getBase64Image()}" alt="Card image cap" style="max-width:  16rem; height: auto">
+        </div>
+        <div class="col-4">
+            <h5 class="card-title" th:text="${post.getTitle()}"></h5>
+            <p class="card-text" th:text="${post.getDescription()}"></p>
+            <a th:href="@{'/posts/{id}/readMore' (id=${post.getId()})}" class="btn btn-dark">Read More</a>
 
-    <div th:each="post: ${posts}" class="row">
-            <div class="col-md-6">
-                <img style="width: 25vw; height: auto" th:src="${post.getBase64Image()}">
-            </div>
+            <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}">
 
-            <div class="col-md-6 text-center">
+                <input type='hidden' th:if="${#request.getRemoteUser() != null}"
+                       th:value="${#request.getRemoteUser()}" name='email' />
 
-                <div class="row-md-6">
-                    <h1 th:text="${post.getTitle()}"></h1>
-
-
-                    <p th:text="${post.getDescription()}" class="paragraph d-md-block col-sm d-none"></p>
-                    <button class="d-md-block col-sm d-none btn">
-                        <a th:href="@{'/posts/{id}/readMore' (id=${post.getId()})}">Read more</a>
-                    </button>
-
+                <div>
+                    <th:block th:if="${#request.getRemoteUser() != null}" >
+                        <label>Rate post</label><br/>
+                        <select   id="rating" name="rating">
+                            <option  th:each="rate:${rating}" th:text="${rate.name}" th:n   ame="${rate.name}" th:value="${rate.name}" >RATE</option>
+                        </select>
+                        <button type="submit" class="btn btn-dark">Review</button>
+                    </th:block>
                 </div>
-
-                <div class="row-md-6">
-                    <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}">
-
-                        <input type='hidden' th:if="${#request.getRemoteUser() != null}"
-                               th:value="${#request.getRemoteUser()}" name='email' />
-
-                        <div>
-                            <th:block th:if="${#request.getRemoteUser() != null}" >
-                                <label>Rate post</label><br/>
-                                <select   id="rating" name="rating">
-                                    <option  th:each="rate:${rating}" th:text="${rate.name}" th:name="${rate.name}" th:value="${rate.name}" >RATE</option>
-                                </select>
-                                <button type="submit" >Review</button>
-                            </th:block>
-                        </div>
-                    </form>
-                </div>
-                <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}">
-                    <button type="submit" class="delete-item">Delete</button>
-                </form>
-                <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item">Edit</a>
-            </div>
-            <hr>
+            </form>
 
         </div>
+        <div class="col-4">
+            <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}">
+                <button type="submit" class="btn btn-danger delete-item">Delete</button>
+            </form>
+            <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item btn btn-dark">Edit</a>
+        </div>
+        <hr />
     </div>
+</div>

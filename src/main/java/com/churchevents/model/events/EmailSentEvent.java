@@ -12,8 +12,6 @@ public class EmailSentEvent extends ApplicationEvent {
     private LocalDateTime when;
     private String email;
 
-
-
     public String getEmail() {
         return email;
     }
@@ -28,9 +26,4 @@ public class EmailSentEvent extends ApplicationEvent {
         this.email = source.getEmail();
     }
 
-    public EmailSentEvent(User source, LocalDateTime when) {
-        super(source);
-
-        this.when = when;
-    }
 }

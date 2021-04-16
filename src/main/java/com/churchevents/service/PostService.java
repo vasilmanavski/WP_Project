@@ -29,8 +29,7 @@ public interface PostService {
     Post click(Long id);
     Post delete(Long id);
     void sortPosts(List<Post> posts);
-
-
+    void deleteByPost(Post post);
 
 }
 

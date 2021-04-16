@@ -10,6 +10,7 @@ import com.churchevents.service.SubscribersService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +26,6 @@ public class SubscribersServiceImpl implements SubscribersService {
         this.subscribersRepository = subscribersRepository;
         this.subscriptionTokenRepository = subscriptionToken;
     }
-
 
     @Override
     public List<Subscriber> findAll() {

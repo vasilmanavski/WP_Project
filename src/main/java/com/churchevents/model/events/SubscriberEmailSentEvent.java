@@ -34,8 +34,4 @@ public class SubscriberEmailSentEvent extends ApplicationEvent {
         this.email = source.getEmail();
     }
 
-    public SubscriberEmailSentEvent(Subscriber source, LocalDateTime when, String email) {
-        super(source);
-        this.when = when;
-    }
 }

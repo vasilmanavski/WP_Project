@@ -102,7 +102,9 @@ public class PostsController {
         model.addAttribute("posts",posts);
         model.addAttribute("type",type);
         model.addAttribute("rating",ratings);
-        return "posts_form.html";
+        model.addAttribute("bodyContent", "posts_form");
+
+        return "master-template";
     }
 
     @GetMapping("/posts/{id}/edit")
