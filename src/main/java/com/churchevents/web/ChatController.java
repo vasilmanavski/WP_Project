@@ -3,6 +3,7 @@ package com.churchevents.web;
 import com.churchevents.model.ChatMessagePayload;
 import com.churchevents.model.GroupChat;
 import com.churchevents.model.User;
+import com.churchevents.model.enums.MessageType;
 import com.churchevents.service.ChatMessageService;
 import com.churchevents.service.GroupChatService;
 import org.springframework.data.domain.Pageable;
@@ -197,9 +198,35 @@ public class ChatController {
             return;
         }
 
-        this.simpMessagingTemplate.convertAndSendToUser(
-                chatMessagePayload.getRecipientId(), "/queue/messages",
-                chatMessagePayload
-        );
+        if (chatMessagePayload.getMessageType().equals(MessageType.USER)) {
+            this.simpMessagingTemplate.convertAndSendToUser(
+                    chatMessagePayload.getRecipientId(), "/queue/messages",
+                    chatMessagePayload
+            );
+        } else if (chatMessagePayload.getMessageType().equals(MessageType.GROUP)) {
+            GroupChat groupChat;
+            List<String> users;
+            try {
+                groupChat = this.groupChatService.findGroupById(Long.parseLong(chatMessagePayload.getRecipientId()));
+                users = this.groupChatService.userIdsThatBelongToGroupChat(authenticatedUser, groupChat);
+            } catch (Exception exception) {
+                return;
+            }
+
+            users.forEach(user -> {
+                boolean shouldUserReceiveMessage;
+                try {
+                    shouldUserReceiveMessage = this.groupChatService.userShouldReceiveMessage(user, groupChat);
+                } catch (Exception exception) {
+                    shouldUserReceiveMessage = false;
+                }
+
+                if (shouldUserReceiveMessage) {
+                    this.simpMessagingTemplate.convertAndSendToUser(
+                            user, "/queue/groupChat", chatMessagePayload
+                    );
+                }
+            });
+        }
     }
 }

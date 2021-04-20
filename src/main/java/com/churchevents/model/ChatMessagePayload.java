@@ -1,5 +1,6 @@
 package com.churchevents.model;
 
+import com.churchevents.model.enums.MessageType;
 import lombok.Data;
 
 import java.util.Date;
@@ -18,6 +19,8 @@ public class ChatMessagePayload {
     private Date timestamp;
 
     private Boolean typing;
+
+    private MessageType messageType;
 
     public ChatMessagePayload() {
     }

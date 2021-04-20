@@ -284,7 +284,25 @@
 
     const onGroupMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
-        if (newMessage.name !== undefined && newMessage.id !== undefined) {
+
+        if (newMessage.typing !== undefined && newMessage.typing !== null) {
+            if (newMessage.recipientId === activeUser) {
+                if (newMessage.typing === true) {
+                    $("#typing").text("Someone is typing...");
+                    usersWhoAreTypingDirectly.add(newMessage.recipientId);
+                } else {
+                    $("#typing").text("");
+                    usersWhoAreTypingDirectly.delete(newMessage.recipientId);
+                }
+            } else {
+                if (usersWhoAreTypingDirectly.has(newMessage.recipientId)) {
+                    if (usersWhoAreTypingDirectly.size === 1) {
+                        $("#typing").text("");
+                    }
+                    usersWhoAreTypingDirectly.delete(newMessage.recipientId);
+                }
+            }
+        } else if (newMessage.name !== undefined && newMessage.id !== undefined) {
             $("#all_group_chats").prepend(`<div id='${newMessage.id}' class="users users_background">${newMessage.name}</div>`);
         } else if(newMessage.senderId !== undefined && newMessage.recipientId !== undefined && newMessage.content !== undefined) {
             if (newMessage.recipientId === activeUser) {
@@ -377,11 +395,6 @@
     };
 
     const loadMessages = () => {
-        if (usersWhoAreTypingDirectly.size === 1) {
-            $("#typing").text("");
-            usersWhoAreTypingDirectly.clear();
-        }
-
         if (page === 0) {
             $("#messagediv > ul").empty();
         }
@@ -514,12 +527,13 @@
         }
     };
 
-    function typingTimeout(activeUserRecipient){
+    function typingTimeout(activeUserRecipient, messageType){
         typing = false;
         const message = {
             senderId: currentUser,
             recipientId: activeUserRecipient,
-            typing: typing
+            typing: typing,
+            messageType: messageType
         };
         stompClient.send("/app/typing", {}, JSON.stringify(message));
     }
@@ -578,6 +592,11 @@
             activeUserDiv.addClass("users_background_selected");
             activeUser = activeUserDiv.attr("id");
 
+            if (usersWhoAreTypingDirectly.size === 1) {
+                $("#typing").text("");
+                usersWhoAreTypingDirectly.clear();
+            }
+
             $("#participants").empty();
             const $show_participants = $("#show_participants");
             if (!activeUserDiv.hasClass("group_chats")) {
@@ -596,7 +615,7 @@
         $("#user_input").on("keypress", function (e) {
             if (e.which === 13) {
                 clearTimeout(timeout);
-                typingTimeout(activeUser);
+                typingTimeout(activeUser, !activeUserDiv.hasClass("group_chats") ? "USER" : "GROUP");
 
                 $(this).attr("disabled", "disabled");
                 sendMessageFromInput();
@@ -605,14 +624,16 @@
                 $(this).focus();
             } else {
                 typing = true;
+                const messageType = !activeUserDiv.hasClass("group_chats") ? "USER" : "GROUP";
                 const message = {
                     senderId: currentUser,
                     recipientId: activeUser,
-                    typing: typing
+                    typing: typing,
+                    messageType: messageType
                 };
                 stompClient.send("/app/typing", {}, JSON.stringify(message));
                 clearTimeout(timeout);
-                timeout = setTimeout(typingTimeout, 1500, activeUser);
+                timeout = setTimeout(typingTimeout, 1500, activeUser, messageType);
             }
         });
 
