@@ -7,9 +7,11 @@ import com.churchevents.model.enums.MessageStatus;
 import com.churchevents.repository.ChatMessageRepository;
 import com.churchevents.repository.UserRepository;
 import com.churchevents.service.ChatMessageService;
+import com.churchevents.util.OffsetBasedPageRequest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -66,34 +68,55 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         User recipient = this.userRepository.findById(chatMessagePayload.getRecipientId()).orElseThrow();
         ChatMessage chatMessage = new ChatMessage(sender, recipient, chatMessagePayload.getContent(), chatMessagePayload.getTimestamp());
         this.chatMessageRepository.save(chatMessage);
-        return new ChatMessagePayload(chatMessage.getId(), chatMessage.getSender().getEmail(),
-                chatMessage.getRecipient().getEmail(),
-                chatMessage.getContent(), chatMessage.getTimestamp());
+        chatMessagePayload.setId(chatMessage.getId());
+        return chatMessagePayload;
     }
 
     @Override
     @Transactional
-    public Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable) {
+    public Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable, Integer offset) {
+        Pageable pageableCopy = pageable;
+        if (offset != null && offset != 0) {
+            pageableCopy = new OffsetBasedPageRequest(offset, pageable.getPageSize(), pageable.getSort());
+        }
         User sender = this.userRepository.findById(senderId).orElseThrow();
         User recipient = this.userRepository.findById(recipientId).orElseThrow();
-        Slice<ChatMessage> chatMessages = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageable);
+        Slice<ChatMessage> chatMessages = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageableCopy);
 
         Slice<ChatMessage> chatMessagesToBeUpdated = chatMessages;
-        boolean areThereNewMessagesInCurrentBatch = chatMessagesToBeUpdated.getContent().stream().anyMatch(chatMessage -> chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED));
-        int currentPage = pageable.getPageNumber();
-        while (areThereNewMessagesInCurrentBatch) {
-            List<ChatMessage> chatMessagesWithUpdatedStatus = chatMessagesToBeUpdated.getContent();
+        List<ChatMessage> chatMessagesWithUpdatedStatus =
+                chatMessagesToBeUpdated.getContent()
+                        .stream()
+                        .filter(chatMessage -> chatMessage.getRecipient().getEmail().equals(sender.getEmail())
+                                && chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED))
+                        .collect(Collectors.toList());
+
+        while (chatMessagesWithUpdatedStatus.size() > 0) {
             chatMessagesWithUpdatedStatus.forEach(chatMessage -> chatMessage.setMessageStatus(MessageStatus.SEEN));
             this.chatMessageRepository.saveAll(chatMessagesWithUpdatedStatus);
 
-            Pageable pageableCopy = PageRequest.of(++currentPage, pageable.getPageSize(), pageable.getSort());
+            if (!chatMessagesToBeUpdated.hasNext()) {
+                break;
+            }
+
+            if (offset != null && offset != 0) {
+                pageableCopy = new OffsetBasedPageRequest((int)(pageableCopy.getOffset() + pageableCopy.getPageSize()), pageableCopy.getPageSize(), pageableCopy.getSort());
+            } else {
+                pageableCopy = PageRequest.of(pageableCopy.getPageNumber() + 1, pageableCopy.getPageSize(), pageableCopy.getSort());
+            }
+
             chatMessagesToBeUpdated = this.chatMessageRepository.findAllBySenderAndRecipientOrSenderAndRecipient(sender, recipient, recipient, sender, pageableCopy);
-            areThereNewMessagesInCurrentBatch = chatMessagesToBeUpdated.getContent().stream().anyMatch(chatMessage -> chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED));
+            chatMessagesWithUpdatedStatus =
+                    chatMessagesToBeUpdated.getContent()
+                            .stream()
+                            .filter(chatMessage -> chatMessage.getRecipient().getEmail().equals(sender.getEmail())
+                                    && chatMessage.getMessageStatus().equals(MessageStatus.DELIVERED))
+                            .collect(Collectors.toList());
         }
 
         return chatMessages.map(chatMessage -> new ChatMessagePayload(
                 chatMessage.getId(), chatMessage.getSender().getEmail(), chatMessage.getRecipient().getEmail(),
-                chatMessage.getContent(), chatMessage.getTimestamp()));
+                chatMessage.getContent(), chatMessage.getTimestamp(), chatMessage.getMessageStatus()));
     }
 
     @Override
@@ -104,8 +127,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public void updateMessageStatus(Long chatMessageId) {
+    public void updateMessageStatus(Long chatMessageId, String authenticatedUserId) {
         ChatMessage chatMessage = this.chatMessageRepository.findById(chatMessageId).orElseThrow();
+        if (!chatMessage.getRecipient().getEmail().equals(authenticatedUserId)) {
+            throw new IllegalArgumentException();
+        }
         chatMessage.setMessageStatus(MessageStatus.SEEN);
         this.chatMessageRepository.save(chatMessage);
     }
@@ -134,13 +160,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         List<String> allUsersWhoHaveMessagesWithTheCurrentUserSortedByLatestMessage = latestMessageBetweenUser.stream()
                 .sorted(Comparator.comparing(SenderRecipientClass::getDate).reversed())
-                .map(senderRecipientClass -> {
-                    String[] userIdsPair = senderRecipientClass.getId().split("\\s");
-                    String senderId = userIdsPair[0];
-                    String recipientId = userIdsPair[1];
-
-                    return senderId.equals(currentUserId) ? recipientId : senderId;
-                })
+                .map(senderRecipientClass -> senderRecipientClass.getId().split("\\s")[1])
                 .collect(Collectors.toList());
 
         List<String> allOtherUsersWhoDontHaveMessagesWithTheCurrentUser = this.userRepository.findAll().stream()

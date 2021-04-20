@@ -1,10 +1,12 @@
 package com.churchevents.web;
 
-import com.churchevents.model.ChatMessage;
 import com.churchevents.model.ChatMessagePayload;
+import com.churchevents.model.GroupChat;
 import com.churchevents.model.User;
+import com.churchevents.model.enums.MessagePurpose;
+import com.churchevents.model.enums.MessageType;
 import com.churchevents.service.ChatMessageService;
-import com.churchevents.service.UserService;
+import com.churchevents.service.GroupChatService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -13,25 +15,23 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
 public class ChatController {
 
-    private final UserService userService;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final ChatMessageService chatMessageService;
+    private final GroupChatService groupChatService;
 
-    public ChatController(UserService userService,
-                          SimpMessagingTemplate simpMessagingTemplate,
-                          ChatMessageService chatMessageService) {
-        this.userService = userService;
+    public ChatController(SimpMessagingTemplate simpMessagingTemplate,
+                          ChatMessageService chatMessageService,
+                          GroupChatService groupChatService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.chatMessageService = chatMessageService;
+        this.groupChatService = groupChatService;
     }
 
     @MessageMapping("/chat")
@@ -53,10 +53,16 @@ public class ChatController {
     @GetMapping("/messages/{senderId}/{recipientId}")
     public ResponseEntity<?> findChatMessages(@PathVariable String senderId,
                                               @PathVariable String recipientId,
-                                              Pageable pageable) {
+                                              @RequestParam(required = false) Integer offset,
+                                              Pageable pageable,
+                                              Authentication authentication) {
+        String authenticatedUserId = ((User)authentication.getPrincipal()).getEmail();
+        if (!senderId.equals(authenticatedUserId)) {
+            return ResponseEntity.badRequest().build();
+        }
         List<ChatMessagePayload> chatMessages;
         try {
-            chatMessages = this.chatMessageService.findChatMessages(senderId, recipientId, pageable).getContent();
+            chatMessages = this.chatMessageService.findChatMessages(senderId, recipientId, pageable, offset).getContent();
         } catch (Exception exception) {
             return ResponseEntity.notFound().build();
         }
@@ -77,12 +83,168 @@ public class ChatController {
     }
 
     @PutMapping("/messages/{messageId}")
-    public ResponseEntity<?> updateMessageStatus(@PathVariable Long messageId) {
+    public ResponseEntity<?> updateMessageStatus(@PathVariable Long messageId,
+                                                 Authentication authentication) {
+        String authenticatedRecipientId = ((User)authentication.getPrincipal()).getEmail();
         try {
-            this.chatMessageService.updateMessageStatus(messageId);
+            this.chatMessageService.updateMessageStatus(messageId, authenticatedRecipientId);
         } catch (Exception exception) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(true);
+    }
+
+    ///////////////////////////// GroupChat /////////////////////////////
+
+    @GetMapping("/chat/groupChats")
+    public ResponseEntity<?> getGroupChats(Authentication authentication) {
+        User currentUser = (User)authentication.getPrincipal();
+        return ResponseEntity.ok(this.groupChatService.getGroupChatsForUser(currentUser));
+    }
+
+    @PostMapping("/chat/createGroupChat")
+    public ResponseEntity<?> createGroupChat(@RequestParam String groupChatName,
+                                             @RequestParam String[] invitedUserIds,
+                                             Authentication authentication) {
+        User currentUser = (User)authentication.getPrincipal();
+        GroupChat groupChat;
+        try {
+            groupChat = this.groupChatService.createGroupChat(groupChatName, currentUser, invitedUserIds);
+        } catch (Exception exception) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<String> users = this.groupChatService.userIdsThatBelongToGroupChat(currentUser, groupChat);
+        users.forEach(user -> this.simpMessagingTemplate.convertAndSendToUser(
+                user, "/queue/groupChat", groupChat
+        ));
+        return ResponseEntity.ok(groupChat);
+    }
+
+    @GetMapping("/group/{userId}/{groupChatId}")
+    public ResponseEntity<?> getGroupChatMessages(@PathVariable String userId,
+                                                  @PathVariable Long groupChatId,
+                                                  @RequestParam(required = false) Integer offset,
+                                                  Pageable pageable,
+                                                  Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!userId.equals(authenticatedUser.getEmail())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ChatMessagePayload> chatMessages;
+        try {
+            chatMessages = this.groupChatService.findChatMessages(authenticatedUser, groupChatId, pageable, offset).getContent();
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(chatMessages);
+    }
+
+    @MessageMapping("/group")
+    public void groupChatCreated(@Payload ChatMessagePayload chatMessagePayload,
+                                 Authentication authentication) {
+        ChatMessagePayload chatMessageSaved = this.groupChatService.saveGroupMessage(chatMessagePayload);
+        User currentUser = (User)authentication.getPrincipal();
+
+        GroupChat groupChat;
+        List<String> users;
+        try {
+            groupChat = this.groupChatService.findGroupById(Long.parseLong(chatMessagePayload.getRecipientId()));
+            users = this.groupChatService.userIdsThatBelongToGroupChat(currentUser, groupChat);
+        } catch (Exception exception) {
+            return;
+        }
+
+        users.forEach(user -> {
+            boolean shouldUserReceiveMessage;
+            try {
+                shouldUserReceiveMessage = this.groupChatService.userShouldReceiveMessage(user, groupChat);
+            } catch (Exception exception) {
+                shouldUserReceiveMessage = false;
+            }
+
+            if (shouldUserReceiveMessage) {
+                this.simpMessagingTemplate.convertAndSendToUser(
+                        user, "/queue/groupChat", chatMessageSaved
+                );
+            }
+        });
+    }
+
+    @GetMapping("/group/{userId}/{groupChatId}/getParticipants")
+    public ResponseEntity<?> getGroupChatParticipants(@PathVariable String userId,
+                                                      @PathVariable Long groupChatId,
+                                                      Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!userId.equals(authenticatedUser.getEmail())) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<String> participants;
+        try {
+            GroupChat groupChat = this.groupChatService.findGroupById(groupChatId);
+            participants = this.groupChatService.userIdsThatBelongToGroupChat(authenticatedUser, groupChat);
+        } catch (Exception exception) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(participants);
+    }
+
+    @MessageMapping("/typing")
+    public void setIsTypingIndicator(@Payload ChatMessagePayload chatMessagePayload,
+                                     Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!chatMessagePayload.getSenderId().equals(authenticatedUser.getEmail())) {
+            return;
+        }
+
+        if (chatMessagePayload.getMessageType().equals(MessageType.USER)) {
+            this.simpMessagingTemplate.convertAndSendToUser(
+                    chatMessagePayload.getRecipientId(), "/queue/messages",
+                    chatMessagePayload
+            );
+        } else if (chatMessagePayload.getMessageType().equals(MessageType.GROUP)) {
+            GroupChat groupChat;
+            List<String> users;
+            try {
+                groupChat = this.groupChatService.findGroupById(Long.parseLong(chatMessagePayload.getRecipientId()));
+                users = this.groupChatService.userIdsThatBelongToGroupChat(authenticatedUser, groupChat);
+            } catch (Exception exception) {
+                return;
+            }
+
+            users.forEach(user -> {
+                boolean shouldUserReceiveMessage;
+                try {
+                    shouldUserReceiveMessage = this.groupChatService.userShouldReceiveMessage(user, groupChat);
+                } catch (Exception exception) {
+                    shouldUserReceiveMessage = false;
+                }
+
+                if (shouldUserReceiveMessage) {
+                    this.simpMessagingTemplate.convertAndSendToUser(
+                            user, "/queue/groupChat", chatMessagePayload
+                    );
+                }
+            });
+        }
+    }
+
+    @MessageMapping("/seen")
+    public void updateMessageStatus(@Payload ChatMessagePayload chatMessagePayload,
+                                    Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!chatMessagePayload.getSenderId().equals(authenticatedUser.getEmail())) {
+            return;
+        }
+
+        if (chatMessagePayload.getMessageType().equals(MessageType.USER)) {
+            chatMessagePayload.setMessagePurpose(MessagePurpose.UPDATE_SEEN);
+            this.simpMessagingTemplate.convertAndSendToUser(
+                    chatMessagePayload.getRecipientId(), "/queue/messages",
+                    chatMessagePayload
+            );
+        }
     }
 }

@@ -11,11 +11,11 @@ public interface ChatMessageService {
 
     ChatMessagePayload save(ChatMessagePayload chatMessagePayload);
 
-    Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable);
+    Slice<ChatMessagePayload> findChatMessages(String senderId, String recipientId, Pageable pageable, Integer offset);
 
     Long countNewMessages(String senderId, String recipientId);
 
-    void updateMessageStatus(Long chatMessageId);
+    void updateMessageStatus(Long chatMessageId, String authenticatedUserIdz);
 
     List<String> allUserEmails(User currentUser);
 }
