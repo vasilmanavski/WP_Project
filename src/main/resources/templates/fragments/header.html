@@ -4,8 +4,9 @@
             <div>
                 <ul>
                      <li class="home"><a class="navbar-brand" href="/">Markus Kirche</a></li>
-<!--                    <li><a class="navbar-brand" th:href="@{'/getPDF'}">Gemeindebrief</a></li>-->
-                    <li><a class="navbar-brand" th:href="@{'/Pastoren'}">Unsere Pastoren</a></li>
+                    <li><a class="navbar-brand" th:href="@{'/chat'}">Chat</a></li>
+                    <li><a class="navbar-brand" th:href="@{'/calendar'}">Calendar</a></li>
+<!--                    <li><a class="navbar-brand" th:href="@{'/Pastoren'}">Unsere Pastoren</a></li>-->
                     <li><a class="navbar-brand" th:href="@{'/AboutUs'}">Über Uns</a></li>
                 </ul>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
@@ -32,11 +33,14 @@
                         </a>
                         </th:block>
                     </li>
+                    <th:block th:if="${#request.getRemoteUser() == null}">
                     <li class="nav-item" >
                         <a class="btn btn-light btn-sm ml-3" href="/login">
                             <i class="fa ion-log-in"></i> Login
                         </a>
                     </li>
+                    </th:block>
+
                 </ul>
             </div>
         </div>

@@ -306,7 +306,7 @@
                 }
             }
         } else if (newMessage.name !== undefined && newMessage.id !== undefined) {
-            $("#all_group_chats").prepend(`<div id='${newMessage.id}' class="users users_background">${newMessage.name}</div>`);
+            $("#all_group_chats").prepend(`<div id='${newMessage.id}' class="users users_background group_chats">${newMessage.name}</div>`);
         } else if(newMessage.senderId !== undefined && newMessage.recipientId !== undefined && newMessage.content !== undefined) {
             if (newMessage.recipientId === activeUser) {
                 const $messagediv = $("#messagediv");
