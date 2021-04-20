@@ -43,7 +43,7 @@ public class SubscribersServiceImpl implements SubscribersService {
 
     @Override
     public void timerForVerification(SubscriberEmailSentEvent event) {
-        CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
+        CompletableFuture.delayedExecutor(120, TimeUnit.SECONDS).execute(() -> {
 
             Subscriber subscriber = this.subscribersRepository.findByEmail(event.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException(event.getEmail()));

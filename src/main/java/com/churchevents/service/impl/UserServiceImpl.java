@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void timerForVerification(EmailSentEvent event) {
-        CompletableFuture.delayedExecutor(60, TimeUnit.SECONDS).execute(() -> {
+        CompletableFuture.delayedExecutor(120, TimeUnit.SECONDS).execute(() -> {
 
             User user = this.userRepository.findByEmail(event.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException(event.getEmail()));
