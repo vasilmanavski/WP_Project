@@ -326,13 +326,23 @@
     const updateMessageStatus = (message) => {
         $.ajax({url: `/messages/${message.id}`, method: "PUT", success: function (result) {
             console.log(result);
+            sendSeenStatus();
         }});
     };
 
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
         //console.log(newMessage);
-        if (newMessage.typing !== null) {
+
+        if (newMessage.messagePurpose !== null) {
+            if (newMessage.senderId === activeUser) {
+                $("#messagediv > ul > li.me > sub").each(function() {
+                    if ($(this).text() === "✓") {
+                        $(this).text("✓✓");
+                    }
+                });
+            }
+        } else if (newMessage.typing !== null) {
             if (newMessage.senderId === activeUser) {
                 if (newMessage.typing === true) {
                     $("#typing").text(`${newMessage.senderId} is typing...`);
@@ -389,9 +399,12 @@
     };
 
     const sendSeenStatus = () => {
-        const seenAck = {
-
+        const message = {
+            senderId: currentUser,
+            recipientId: activeUser,
+            messageType: "USER"
         };
+        stompClient.send("/app/seen", {}, JSON.stringify(message));
     };
 
     const loadMessages = () => {
@@ -427,13 +440,17 @@
 
             result.forEach(function (message) {
                 if (message.senderId === currentUser) {
-                    $("#messagediv > ul").prepend(`<li class="me">${message.content}</li>`);
+                    if (message.messageStatus === "SEEN") {
+                        $("#messagediv > ul").prepend(`<li class="me"><sub style="font-size: xx-small;">&#10003;&#10003;</sub> ${message.content}</li>`);
+                    } else {
+                        $("#messagediv > ul").prepend(`<li class="me"><sub style="font-size: xx-small;">&#10003;</sub> ${message.content}</li>`);
+                    }
                 } else {
                     $("#messagediv > ul").prepend(`<li class="other">${message.content}</li>`);
                 }
             });
             $messagediv.scrollTop(old_scroll + $messagediv.prop("scrollHeight") - old_height);
-            //sendSeenStatus();
+            sendSeenStatus();
         }}).done(function() {
             $("#messagediv").on("scroll", scrollEventHandler);
         });
@@ -502,7 +519,11 @@
 
         const $messagediv = $("#messagediv");
         activeUserNewMessages++;
-        $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
+        if (!activeUserDiv.hasClass("group_chats")) {
+            $("#messagediv > ul").append(`<li class="me"><sub style="font-size: xx-small;">&#10003;</sub> ${userInput}</li>`);
+        } else {
+            $("#messagediv > ul").append(`<li class="me">${userInput}</li>`); //todo for group chat seen
+        }
         $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
 
         const theDiv = document.getElementById(activeUser);

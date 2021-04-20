@@ -116,7 +116,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
         return chatMessages.map(chatMessage -> new ChatMessagePayload(
                 chatMessage.getId(), chatMessage.getSender().getEmail(), chatMessage.getRecipient().getEmail(),
-                chatMessage.getContent(), chatMessage.getTimestamp()));
+                chatMessage.getContent(), chatMessage.getTimestamp(), chatMessage.getMessageStatus()));
     }
 
     @Override

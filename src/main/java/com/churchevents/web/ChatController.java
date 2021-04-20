@@ -3,6 +3,7 @@ package com.churchevents.web;
 import com.churchevents.model.ChatMessagePayload;
 import com.churchevents.model.GroupChat;
 import com.churchevents.model.User;
+import com.churchevents.model.enums.MessagePurpose;
 import com.churchevents.model.enums.MessageType;
 import com.churchevents.service.ChatMessageService;
 import com.churchevents.service.GroupChatService;
@@ -227,6 +228,23 @@ public class ChatController {
                     );
                 }
             });
+        }
+    }
+
+    @MessageMapping("/seen")
+    public void updateMessageStatus(@Payload ChatMessagePayload chatMessagePayload,
+                                    Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!chatMessagePayload.getSenderId().equals(authenticatedUser.getEmail())) {
+            return;
+        }
+
+        if (chatMessagePayload.getMessageType().equals(MessageType.USER)) {
+            chatMessagePayload.setMessagePurpose(MessagePurpose.UPDATE_SEEN);
+            this.simpMessagingTemplate.convertAndSendToUser(
+                    chatMessagePayload.getRecipientId(), "/queue/messages",
+                    chatMessagePayload
+            );
         }
     }
 }
