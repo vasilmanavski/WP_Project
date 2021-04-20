@@ -14,37 +14,86 @@
 
     <script src='/assets/demo-to-codepen.js'></script>
 </head>
-    <script th:inline="javascript">
+<script  th:inline="javascript">
 
-       var post =[[${posts}]]
+    var post =[[${posts}]]
 
-       console.log(post)
+    console.log(post)
 
-        document.addEventListener('DOMContentLoaded', function() {
-            let calendarEl = document.getElementById('calendar');
+    document.addEventListener('DOMContentLoaded', function () {
+        let calendarEl = document.getElementById('calendar');
+        let calendar = new FullCalendar.Calendar(calendarEl, {
 
-            let  calendar = new FullCalendar.Calendar(calendarEl, {
+            Object, default:
 
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                {
+                    close: 'fa-times',
+                    prev: 'fa-chevron-left',
+                    next: 'fa-chevron-right',
+                    prevYear: 'fa-angle-double-left',
+                    nextYear: 'fa-angle-double-right'
                 },
-                events: [],
-            });
-            calendar.render();
 
-              post.forEach(function (item){
-                  var title = item.title;
-                  var shortDescription = item.shortDescription;
-                  var dateCreated = item.dateCreated;
-                  var news={ title: title, start:  dateCreated};
-                  calendar.addEvent(news);
+            eventRender: function(event, element) {
+                if(event.icon){
+                    element.find(".fc-title").prepend("<i class='fa fa-"+event.icon+"'></i>");
+                }
+            },
 
-              });
+            eventClick: function (info) {
+
+                info.jsEvent.preventDefault();
+
+                var ids = info.event.id;
+
+                window.open("http://localhost:8080/posts/" + ids + "/readMore");
+
+
+            },
+
+            themeSystem: 'default',
+
+            initialView: 'dayGridMonth',
+            //initialDate: '2021-02-07',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            events: [],
+
+
         });
-    </script>
+
+
+
+        calendar.render();
+
+
+        post.forEach(function (item) {
+            var title = item.title;
+            var shortDescription = item.shortDescription;
+            var dateCreated = item.dateCreated;
+            var id = item.id;
+            var event = {id: id, title: title, start: dateCreated};
+
+
+            calendar.addEvent(event);
+
+
+        });
+
+
+
+
+    });
+
+
+    //var post   = [[${posts}]];
+
+
+
+</script>
 
 
 <body>

@@ -31,7 +31,7 @@ public class UserController {
     }
 
     @GetMapping("/Roles")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')") to do
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String addUserToRole(@RequestParam(required = false) String error, Model model){
 
         if(error != null && !error.isEmpty()){
