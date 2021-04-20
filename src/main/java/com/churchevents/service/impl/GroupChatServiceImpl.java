@@ -56,6 +56,29 @@ public class GroupChatServiceImpl implements GroupChatService {
         return this.usersGroupChatsRepository.findAllByUser(user)
                 .stream()
                 .map(UsersGroupChats::getGroupChat)
+                .sorted((groupChat1, groupChat2) -> {
+                    Date dateOfLatestMessageGroupChat1, dateOfLatestMessageGroupChat2;
+
+                    Optional<GroupChatMessage> groupChat1LatestMessage = groupChat1.getGroupChatMessages()
+                            .stream()
+                            .max(Comparator.comparing(GroupChatMessage::getTimestamp));
+                    if (groupChat1LatestMessage.isPresent()) {
+                        dateOfLatestMessageGroupChat1 = groupChat1LatestMessage.get().getTimestamp();
+                    } else {
+                        dateOfLatestMessageGroupChat1 = groupChat1.getDateCreated();
+                    }
+
+                    Optional<GroupChatMessage> groupChat2LatestMessage = groupChat2.getGroupChatMessages()
+                            .stream()
+                            .max(Comparator.comparing(GroupChatMessage::getTimestamp));
+                    if (groupChat2LatestMessage.isPresent()) {
+                        dateOfLatestMessageGroupChat2 = groupChat2LatestMessage.get().getTimestamp();
+                    } else {
+                        dateOfLatestMessageGroupChat2 = groupChat2.getDateCreated();
+                    }
+
+                    return dateOfLatestMessageGroupChat2.compareTo(dateOfLatestMessageGroupChat1);
+                })
                 .collect(Collectors.toList());
     }
 

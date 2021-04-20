@@ -188,4 +188,18 @@ public class ChatController {
         }
         return ResponseEntity.ok(participants);
     }
+
+    @MessageMapping("/typing")
+    public void setIsTypingIndicator(@Payload ChatMessagePayload chatMessagePayload,
+                                     Authentication authentication) {
+        User authenticatedUser = (User)authentication.getPrincipal();
+        if (!chatMessagePayload.getSenderId().equals(authenticatedUser.getEmail())) {
+            return;
+        }
+
+        this.simpMessagingTemplate.convertAndSendToUser(
+                chatMessagePayload.getRecipientId(), "/queue/messages",
+                chatMessagePayload
+        );
+    }
 }

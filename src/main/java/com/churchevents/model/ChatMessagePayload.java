@@ -17,6 +17,8 @@ public class ChatMessagePayload {
 
     private Date timestamp;
 
+    private Boolean typing;
+
     public ChatMessagePayload() {
     }
 

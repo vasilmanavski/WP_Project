@@ -123,42 +123,49 @@
 </head>
 <body>
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-2" id="chats">
-            <h2>Users</h2>
-            <div id="all_users">
-                <div th:each="user : ${allUsers}" class="users users_background" th:id="${user}">
-                    <th:block th:text="${user}"></th:block>
+    <div id="conversationDiv">
+        <div class="row">
+            <div class="col-2" id="chats">
+                <h2>Users</h2>
+                <div id="all_users">
+                    <div th:each="user : ${allUsers}" class="users users_background" th:id="${user}">
+                        <th:block th:text="${user}"></th:block>
+                    </div>
+                </div>
+                <h2>Group Chats</h2>
+                <div id="all_group_chats">
+
                 </div>
             </div>
-            <h2>Group Chats</h2>
-            <div id="all_group_chats">
+            <div class="col-8" id="message_board">
+                <div id="messagediv">
+                    <ul>
 
+                    </ul>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div id="typing"></div>
+                    </div>
+                    <div class="col-6" style="text-align: right;">
+                        <input type="text" id="user_input" placeholder="Write your message..."/>
+                        <button id="send">Send message</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <button id="show_participants" type="button" class="btn btn-primary">Show Participants</button>
+                <div id="participants">
+
+                </div>
             </div>
         </div>
-        <div class="col-8" id="message_board">
-            <div id="messagediv">
-                <ul>
-
-                </ul>
-            </div>
-            <div>
-                <input type="text" id="user_input" placeholder="Write your message..."/>
-                <button id="send">Send message</button>
-            </div>
-        </div>
-        <div class="col-2">
-            <button id="show_participants" type="button" class="btn btn-primary">Show Participants</button>
-            <div id="participants">
-
-            </div>
-        </div>
+        <br/>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+            Create Group Chat
+        </button>
+        <hr/>
     </div>
-    <br/>
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
-        Create Group Chat
-    </button>
-    <hr/>
 
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -189,6 +196,17 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col">
+            <div>
+                <button id="connect" onclick="connect();" class="btn btn-primary">Connect</button>
+                <button id="disconnect" disabled="disabled" onclick="disconnect();" class="btn btn-secondary">
+                    Disconnect
+                </button>
+            </div>
+        </div>
+    </div>
+
     <span th:text ="${#authentication.getPrincipal().getEmail()}"></span>
 </div>
 
@@ -206,6 +224,42 @@
     let activeUserNewMessages = 0;
     let firstTimeMessageDivClicked = false;
 
+    let typing = false;
+    let timeout = null;
+    let usersWhoAreTypingDirectly = new Set();
+
+    function setConnected(connected) {
+        document.getElementById('connect').disabled = connected;
+        document.getElementById('disconnect').disabled = !connected;
+        document.getElementById('conversationDiv').style.visibility = connected ? 'visible' : 'hidden';
+    }
+
+    // function connect() {
+    //     let socket = new SockJS('http://localhost:8080/ws');
+    //     stompClient = Stomp.over(socket);
+    //     stompClient.connect({}, function(frame) {
+    //         setConnected(true);
+    //         console.log('Connected: ' + frame);
+    //
+    //         stompClient.subscribe(
+    //             "/user/" + currentUser + "/queue/messages",
+    //             onMessageReceived
+    //         );
+    //         stompClient.subscribe(
+    //             "/user/" + currentUser + "/queue/groupChat",
+    //             onGroupMessageReceived
+    //         );
+    //     });
+    // }
+
+    function disconnect() {
+        if(stompClient != null) {
+            stompClient.disconnect();
+        }
+        setConnected(false);
+        console.log("Disconnected");
+    }
+
     const connect = () => {
         //let sockjs = new SockJS("https://markuskirche.herokuapp.com/ws");
         let sockjs = new SockJS("http://localhost:8080/ws");
@@ -216,6 +270,8 @@
 
     const onConnected = () => {
         console.log("connected");
+        setConnected(true);
+
         stompClient.subscribe(
             "/user/" + currentUser + "/queue/messages",
             onMessageReceived
@@ -237,7 +293,7 @@
                 $("#messagediv > ul").append(`<li class="other"><span style="font-size: xx-small;color: grey;">${newMessage.senderId}</span><br>${newMessage.content}</li>`);
                 $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
             } else {
-                const theDiv = document.getElementById(newMessage.senderId);
+                const theDiv = document.getElementById(newMessage.recipientId);
                 document.getElementById("all_group_chats").prepend(theDiv);
             }
         }
@@ -257,26 +313,45 @@
 
     const onMessageReceived = (msg) => {
         const newMessage = JSON.parse(msg.body);
-        console.log(newMessage);
-        if (newMessage.senderId === activeUser) {
-            const $messagediv = $("#messagediv");
-            activeUserNewMessages++;
-            $("#messagediv > ul").append(`<li class="other">${newMessage.content}</li>`);
-            $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
-            updateMessageStatus(newMessage);
-        } else {
-            const theDiv = document.getElementById(newMessage.senderId);
-            const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
-            if(isNaN(divOldContent[1])) {
-                const content = document.createTextNode(" 1");
-                theDiv.appendChild(content);
-                // console.log("problem caused by number of message / onMessageReceived");
-                // return;
+        //console.log(newMessage);
+        if (newMessage.typing !== null) {
+            if (newMessage.senderId === activeUser) {
+                if (newMessage.typing === true) {
+                    $("#typing").text(`${newMessage.senderId} is typing...`);
+                    usersWhoAreTypingDirectly.add(newMessage.senderId);
+                } else {
+                    $("#typing").text("");
+                    usersWhoAreTypingDirectly.delete(newMessage.senderId);
+                }
             } else {
-                const constCount = parseInt(divOldContent[1]) + 1;
-                theDiv.textContent = divOldContent[0] + " " + constCount;
+                if (usersWhoAreTypingDirectly.has(newMessage.senderId)) {
+                    if (usersWhoAreTypingDirectly.size === 1) {
+                        $("#typing").text("");
+                    }
+                    usersWhoAreTypingDirectly.delete(newMessage.senderId);
+                }
             }
-            document.getElementById("all_users").prepend(theDiv);
+        } else {
+            if (newMessage.senderId === activeUser) {
+                const $messagediv = $("#messagediv");
+                activeUserNewMessages++;
+                $("#messagediv > ul").append(`<li class="other">${newMessage.content}</li>`);
+                $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
+                updateMessageStatus(newMessage);
+            } else {
+                const theDiv = document.getElementById(newMessage.senderId);
+                const divOldContent = theDiv.textContent.replace(/\s+/g, ' ').trim().split(" ");
+                if(isNaN(divOldContent[1])) {
+                    const content = document.createTextNode(" 1");
+                    theDiv.appendChild(content);
+                    // console.log("problem caused by number of message / onMessageReceived");
+                    // return;
+                } else {
+                    const constCount = parseInt(divOldContent[1]) + 1;
+                    theDiv.textContent = divOldContent[0] + " " + constCount;
+                }
+                document.getElementById("all_users").prepend(theDiv);
+            }
         }
     };
 
@@ -302,6 +377,11 @@
     };
 
     const loadMessages = () => {
+        if (usersWhoAreTypingDirectly.size === 1) {
+            $("#typing").text("");
+            usersWhoAreTypingDirectly.clear();
+        }
+
         if (page === 0) {
             $("#messagediv > ul").empty();
         }
@@ -315,7 +395,7 @@
 
         $("#messagediv").off("scroll", scrollEventHandler);
         $.ajax({url: getMessagesUrl, success: function (result) {
-            console.log(result.length);
+            //console.log(result.length);
 
             if (result.length < size) {
                 hasMoreMessages = false;
@@ -362,7 +442,7 @@
         $.ajax({
             url: getMessagesUrl,
             success: function (result) {
-                console.log(result.length);
+                //console.log(result.length);
 
                 if (result.length < size) {
                     hasMoreMessages = false;
@@ -434,6 +514,16 @@
         }
     };
 
+    function typingTimeout(activeUserRecipient){
+        typing = false;
+        const message = {
+            senderId: currentUser,
+            recipientId: activeUserRecipient,
+            typing: typing
+        };
+        stompClient.send("/app/typing", {}, JSON.stringify(message));
+    }
+
     $(document).ready(function () {
         $.ajax({
             url: "/chat/groupChats",
@@ -451,7 +541,6 @@
 
         allUserEmails.forEach(function (userEmail) {
             $.ajax({url: `/messages/${userEmail}/count`, success: function (result) {
-                //console.log(userEmail, result);
                 if (result !== 0) {
                     const theDiv = document.getElementById(`${userEmail}`);
                     const content = document.createTextNode(result);
@@ -465,31 +554,7 @@
         $("#message_board").hide();
 
         $("#send").click(function () {
-            const $user_input = $("#user_input");
-            let userInput = $user_input.val().trim();
-            if (userInput === '') {
-                console.log("Cannot send empty message.");
-                return;
-            }
-            if (activeUser == null) {
-                console.log("Active user is null.")
-                return;
-            }
-            $user_input.val("");
-            sendMessage(userInput);
-            activeUserNewMessages++;
-
-            const $messagediv = $("#messagediv");
-            $("#messagediv > ul").append(`<li class="me">${userInput}</li>`);
-            $messagediv.animate({ scrollTop: $messagediv.prop("scrollHeight")}, 1000);
-
-            const theDiv = document.getElementById(activeUser);
-            if (!activeUserDiv.hasClass("group_chats")) {
-                document.getElementById("all_users").prepend(theDiv);
-            } else {
-                const theDiv = document.getElementById(activeUser);
-                document.getElementById("all_group_chats").prepend(theDiv);
-            }
+            sendMessageFromInput();
         });
 
         $(document).on("click", ".users", function () {
@@ -530,11 +595,24 @@
 
         $("#user_input").on("keypress", function (e) {
             if (e.which === 13) {
+                clearTimeout(timeout);
+                typingTimeout(activeUser);
+
                 $(this).attr("disabled", "disabled");
                 sendMessageFromInput();
                 $(this).val("");
                 $(this).removeAttr("disabled");
                 $(this).focus();
+            } else {
+                typing = true;
+                const message = {
+                    senderId: currentUser,
+                    recipientId: activeUser,
+                    typing: typing
+                };
+                stompClient.send("/app/typing", {}, JSON.stringify(message));
+                clearTimeout(timeout);
+                timeout = setTimeout(typingTimeout, 1500, activeUser);
             }
         });
 
@@ -550,7 +628,7 @@
             const $form = $(this);
             const url = $form.attr('action');
 
-            console.log("#idForm", $form);
+            //console.log("#idForm", $form);
 
             $.ajax({
                 type: 'POST',
@@ -574,7 +652,7 @@
                         const $participants = $("#participants");
                         $participants.empty();
 
-                        $participants.append(`<div>${currentUser}</div>`);
+                        $participants.append(`<div>${currentUser} (You)</div>`);
                         result.forEach(function (userId) {
                             $participants.append(`<div>${userId}</div>`);
                         });

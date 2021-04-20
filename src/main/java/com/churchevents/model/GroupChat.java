@@ -1,12 +1,11 @@
 package com.churchevents.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
@@ -19,6 +18,10 @@ public class GroupChat {
     private String name;
 
     private Date dateCreated;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "groupChat")
+    private List<GroupChatMessage> groupChatMessages;
 
     public GroupChat() {
     }
