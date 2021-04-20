@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
             User user = this.userRepository.findByEmail(event.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException(event.getEmail()));
 
-            ConfirmationToken confirmationToken = this.confirmationTokenRepository.findByUser(user);
+            ConfirmationToken confirmationToken = this.confirmationTokenRepository.findFirstByUser(user);
             this.confirmationTokenRepository.delete(confirmationToken);
 
             if (!user.isEnabled()) {

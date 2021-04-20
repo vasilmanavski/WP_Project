@@ -1,13 +1,11 @@
 package com.churchevents.model;
 
-import com.churchevents.model.enums.Type;
 import lombok.Data;
 
 import javax.persistence.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Optional;
 
 @Data
 @Entity
@@ -32,7 +30,6 @@ public class Post{
     @Column(columnDefinition="text")
     private String shortDescription;
 
-
     @Column(columnDefinition="text")
     private String description; //change to WYSIWYG
 
@@ -45,14 +42,11 @@ public class Post{
 
     private Integer postClicked;
 
-    private Date dateOfEvent;
 
     private Integer eventGoing;
 
-//    private User email;
-
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    @ManyToOne(fetch = FetchType.EAGER)
+    private User user;
 
     public Post(){
     }
@@ -109,25 +103,17 @@ public class Post{
 
     public Integer getDayOfEvent(){
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(this.getDateOfEvent());
+        calendar.setTime(this.getDateCreated());
 
         return calendar.get(calendar.DAY_OF_MONTH);
     }
 
     public String getMonthOfEvent(){
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(this.getDateOfEvent());
+        calendar.setTime(this.getDateCreated());
 
         SimpleDateFormat month_date = new SimpleDateFormat("MMM");
         return month_date.format(calendar.getTime());
-    }
-
-    public Date getDateOfEvent() {
-        return dateOfEvent;
-    }
-
-    public void setDateOfEvent(Date dateOfEvent) {
-        this.dateOfEvent = dateOfEvent;
     }
 
     public Integer getEventGoing() {
@@ -138,27 +124,14 @@ public class Post{
         this.eventGoing = eventGoing;
     }
 
-    public Type getType() {
-        return type;
-    }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-
-
-    public Post(String title, String description,String shortDescription, String base64Image, Type type, Date dateOfEvent) {
+    public Post(String title, String description,String shortDescription, String base64Image, User user) {
         this.title = title;
         this.description = description;
         this.shortDescription = shortDescription;
-
+        this.user = user;
         this.base64Image = base64Image;
         this.dateCreated = new Date();
-        this.type = type;
-        this.dateOfEvent = this.type.toString().equals("EVENT")
-                ? dateOfEvent
-                : null;
        this.eventGoing = 0;
        this.postClicked = 0;
     }

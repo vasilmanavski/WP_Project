@@ -25,6 +25,7 @@ public class CheckoutController {
         model.addAttribute("amount",amount * 100);
         model.addAttribute("stripePublicKey", stripePublicKey);
         model.addAttribute("currency", ChargeRequest.Currency.EUR);
-        return "checkout";
+        model.addAttribute("bodyContent", "checkout");
+        return "master-template";
     }
 }

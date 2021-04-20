@@ -9,8 +9,8 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </head>
 
-<div class="container">
-    <div class="row" style="margin-top: 2%">
+<div class="container push-top">
+    <div class="row" style="margin-top: 8%">
         <div class="col-md-8 col-md-offset-2">
             <form method="post"  enctype="multipart/form-data" th:action="@{'/posts/{id}' (id=${post?.id})}">
                 <div class="form-group">
@@ -40,37 +40,17 @@
                             name="description"
                             class="form-control"
                             rows="7"
-                            th:value="${post?.description}"
+                            th:text="${post?.description}"
                             required></textarea>
                 </div>
                 <div class="form-group" >
+
+<!--                    <img th:src="${post?.base64Image}">-->
+<!--                    <br/>-->
                     <label>Image</label>
                     <input name="image" type="file" class="form-control" required/>
-                </div>
-
-                <div>
-                <label>Type</label> <br />
-                    <input  id="type"
-                            name="type"
-                            th:each="type:${type}"
-                            th:value="${type.name}"
-                            th:text="${type.name}"
-                            type="radio"
-                            required
-                            >
 
                 </div>
-                <div class="form-group">
-                    <label for="dateOfEvent">Date of event</label>
-                    <input type="datetime-local"
-                           id="dateOfEvent"
-                           name="dateOfEvent"
-                           class="form-control"
-                           th:value="${post?.dateOfEvent}"
-                           required>
-                </div>
-
-
         <button id="submit" type="submit" class="btn btn-dark">Submit</button> <br />
         <a id="back" href="/posts" type="button" class="btn btn-primary">Back to posts</a>
 
@@ -80,3 +60,9 @@
 </div>
 
 </html>
+
+<style>
+    .push-top{
+        margin-bottom: 7.15vw;
+    }
+</style>

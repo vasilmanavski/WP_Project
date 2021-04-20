@@ -13,7 +13,7 @@
             <button class="btn btn-primary" type="submit">Subscribe </button>
         </div>
     </form>
-
+    <br />
     <div th:if="${subscriberEmailError}">
         <h1>Looks like you are already subscribed. Please check your email</h1>
     </div>
@@ -24,5 +24,7 @@
 
 
 <style>
-
+    h1, h2 {
+        font-size: 1.3vw;
+    }
 </style>

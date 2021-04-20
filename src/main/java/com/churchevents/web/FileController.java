@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,7 @@ public class FileController {
     }
 
     @PostMapping("/uploadFile")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String uploadFile(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) throws MessagingException, IOException {
 
         try {
@@ -50,6 +52,7 @@ public class FileController {
     }
 
     @RequestMapping(value = "/getPDF", method = RequestMethod.GET)
+
     public ResponseEntity<byte[]> getPDF() throws IOException {
         HttpHeaders headers = new HttpHeaders();
 

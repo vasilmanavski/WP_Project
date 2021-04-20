@@ -2,6 +2,7 @@
 
 
 <a th:href="@{'/getPDF'}"><img th:src="@{/images/Gemeindebrief.jpg}" style="width: 50%"/></a>
+<th:block sec:authorize="hasAuthority('ROLE_ADMIN')">
 <form method="POST" th:action="@{/uploadFile}" enctype="multipart/form-data">
     <input type="file" name="file"/>
     <br/>
@@ -9,6 +10,7 @@
 
     <button type="submit" class="btn btn-dark">Submit</button>
 </form>
+</th:block>
 <hr/>
 <div th:if="${message}">
     <h2 th:text="${message}"/>

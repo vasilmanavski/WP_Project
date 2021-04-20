@@ -1,112 +1,42 @@
-
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"/>
-    <title>Products</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/readMore.css}" xmlns:th="http://www.thymeleaf.org">
+
 </head>
 
-<body>
-<header xmlns:th="http://www.thymeleaf.org">
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="/">Markus Kirche</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
-                    aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+<main xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 
-            <div class="collapse navbar-collapse justify-content-end" id="navbarsExampleDefault">
-
-
-
-                <form class="form-inline my-2 my-lg-0">
-                    <div class="input-group input-group-sm">
-                        <input type="text" class="form-control" aria-label="Small"
-                               aria-describedby="inputGroup-sizing-sm"
-                               placeholder="Search...">
-                        <div class="input-group-append">
-                            <button type="button" class="btn btn-secondary btn-number">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-                <ul class="nav navbar-nav navbar-right">
-
-                    <li class="nav-item" >
-                        <a class="nav-link" href="#">
-                            <th:block th:if="${#request.getRemoteUser() != null}"
-                                      th:text="${#request.getRemoteUser()}"></th:block>
-                        </a>
-                    </li>
-
-                    <li class="nav-item" >
-                        <a class="btn btn-light btn-sm ml-3" href="/logout">
-                            <i class="fa fa-shopping-cart"></i> Logout
-                        </a>
-                    </li>
-                    <li class="nav-item" >
-                        <a class="btn btn-light btn-sm ml-3" href="/login">
-                            <i class="fa fa-shopping-cart"></i> Login
-                        </a>
-                    </li>
-                </ul>
+    <article>
+        <div class="article-header">
+            <div class="headline">
+                <p th:text="${post.getMonthOfEvent()} + ${post.getDayOfEvent()}"></p>
+                <h1 th:text="${post?.title}">Our National Parks</h1>
+                <div class="byline" th:text="${post.user.email}"></div>
             </div>
-        </div>
-    </nav>
-</header>
-
-<div>
-    <!-- The form below should invoke the method ProductsController.showProducts -->
-
-    <form method="post"  enctype="multipart/form-data" th:action="@{'/posts/{id}/readMore' (id=${post?.id})}">
-
-
-
-         <div class="row">
-             <div class="col-12" >
-                 <img class="center" th:src="${post?.getBase64Image()}"/>
-
-
-
-             </div>
-         </div>
-
-
-
-        <div class="row">
-
-
-
-
-
-
-            <div class="col-12">
-                <p th:text="${post?.title}"></p>
-                <br />
-                <p th:text="${post?.description}"></p>
-                <br />
-                <p th:text="${post?.dateOfEvent}"></p>
-
-
-
-            </div>
+<!--            <div th:style="'background:url(' + ${post.getBase64Image()} + ');'" class="image"></div>-->
+                 <div id="main-bg" th:style="'background:url(' + @{/images/pic3.jpg} + ');'" class="image"></div>
 
         </div>
-
-        <div style="font-size: 20px; font:bold; color: brown">
+        <div class="article-text">
+            <p class="first" th:text="${post?.description}"></p>
+        </div>
+        <br />
+        <div class="text-center" style="font-size: 20px; color: brown">
             Total views
-            <label th:name="clicked" th:value="${clicked}" th:text="${clicked}"><label/>
+            <label th:name="clicked" th:value="${clicked}" th:text="${clicked}">
+                </label>
         </div>
-    </form>
-    </div>
+    </article>
+</main>
+<style>
+    #main-bg{
+        width: 100%;
+        height: 30vw;
 
+        margin-bottom: 1.9em;
+        background-attachment: fixed;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+</style>
 
-
-
-</body>
-</html>

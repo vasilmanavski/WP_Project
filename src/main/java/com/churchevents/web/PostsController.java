@@ -2,13 +2,16 @@ package com.churchevents.web;
 
 import com.churchevents.model.Post;
 
-import com.churchevents.model.Subscriber;
 import com.churchevents.model.User;
 import com.churchevents.model.enums.Rating;
-import com.churchevents.model.enums.Type;
+import com.churchevents.model.exceptions.EmailNotFoundException;
 import com.churchevents.service.*;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,27 +20,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
-import java.io.*;
 
-import com.churchevents.model.User;
-import com.churchevents.model.enums.Rating;
-import com.churchevents.model.enums.Type;
 import com.churchevents.service.AuthService;
 import com.churchevents.service.PostService;
 import com.churchevents.service.ReviewService;
 import com.churchevents.service.UserService;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 public class PostsController {
@@ -63,11 +58,27 @@ public class PostsController {
     }
 
     @GetMapping({"/","/posts"})
-    public String showPosts(Model model) {
+    public String showPosts(Model model,
+                            @RequestParam("page") Optional<Integer> page,
+                            @RequestParam("size") Optional<Integer> size) {
         Rating [] ratings = Rating.values();
         List<User> users = userService.listAllUsers();
         List<Post> posts = this.postService.listAllPosts();
         List<Post> lastPosts = this.postService.lastPosts();
+
+        int currentPage = page.orElse(1);
+        int pageSize = size.orElse(3);
+        Page<Post> postPage = postService.findPaginated(PageRequest.of(currentPage - 1, pageSize));
+
+        model.addAttribute("postPage", postPage);
+
+        int totalPages = postPage.getTotalPages();
+        if(totalPages > 0){
+            List<Integer> pageNumbers = IntStream.rangeClosed(1, totalPages)
+                    .boxed()
+                    .collect(Collectors.toList());
+            model.addAttribute("pageNumbers", pageNumbers);
+        }
 
         model.addAttribute("rating",ratings);
         model.addAttribute("posts",posts);
@@ -75,8 +86,6 @@ public class PostsController {
         model.addAttribute("user",users);
         model.addAttribute("bodyContent", "list_posts");
         return "master-template";
-
-
     }
     @GetMapping("/calendar")
     public String showCalendar(Model model) {
@@ -86,21 +95,22 @@ public class PostsController {
         model.addAttribute("rating",ratings);
         model.addAttribute("posts",posts);
         model.addAttribute("user",users);
-        return "cal.html";
+        model.addAttribute("bodyContent", "cal");
+        return "master-template";
 
 
     }
 
+
     @GetMapping("/posts/add")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showAdd(Model model) {
         List<Post> posts = this.postService.listAllPosts();
-        Type [] type = Type.values();
         Rating [] ratings = Rating.values();
 
 
 
         model.addAttribute("posts",posts);
-        model.addAttribute("type",type);
         model.addAttribute("rating",ratings);
         model.addAttribute("bodyContent", "posts_form");
 
@@ -108,10 +118,8 @@ public class PostsController {
     }
 
     @GetMapping("/posts/{id}/edit")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public String showEdit(@PathVariable Long id, Model model) {
-        Type [] type = Type.values();
-        model.addAttribute("type",type);
-
         Post post = this.postService.findById(id);
 
         model.addAttribute("post",post);
@@ -125,11 +133,18 @@ public class PostsController {
     public String create(@RequestParam String title,
                          @RequestParam String description,
                          @RequestParam String shortDescription,
-                         @RequestParam MultipartFile image,
-                         @RequestParam Type type,
-                         @RequestParam Date dateOfEvent) throws IOException, SQLException {
+                         @RequestParam MultipartFile image
+                        ) throws IOException {
 
-       this.postService.create(title,description,shortDescription,image,type,dateOfEvent);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+
+        String username = ((UserDetails)principal).getUsername();
+
+        User user = this.userService.findByEmail(username)
+                .orElseThrow(EmailNotFoundException::new);
+
+       this.postService.create(title,description,shortDescription,image, user);
         return "redirect:/posts";
     }
 
@@ -142,12 +157,18 @@ public class PostsController {
 
                          @RequestParam String shortDescription,
 
-                         @RequestParam MultipartFile image,
-                         @RequestParam Type type,
-                         @RequestParam Date dateOfEvent) throws IOException {
+                         @RequestParam MultipartFile image) throws IOException {
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 
-        this.postService.update(id,title,description,shortDescription,image,type,dateOfEvent);
+        String username = ((UserDetails)principal).getUsername();
+
+        User user = this.userService.findByEmail(username)
+                .orElseThrow(EmailNotFoundException::new);
+
+
+        this.postService.update(id,title,description,shortDescription,image,user);
 
         return "redirect:/posts";
     }
@@ -179,18 +200,13 @@ public class PostsController {
 
         Post post = postService.findById(id);
 
-        int i = post.getPostClicked();
-        i = i+1;
-        post.setPostClicked(i);
+        post.setPostClicked(post.getPostClicked() + 1);
         postService.click(id);
-        System.out.println(post.getPostClicked());
-        Type [] type = Type.values();
 
         model.addAttribute("clicked", post.getPostClicked());
-        model.addAttribute("type",type);
         model.addAttribute("post",post);
+        model.addAttribute("bodyContent", "readMore.html");
 
-        return "readMore.html";
+        return "master-template";
     }
-
 }

@@ -1,33 +1,47 @@
-<!DOCTYPE html>
-<html lang="en" >
 <head>
-    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/readMore.css}" xmlns:th="http://www.thymeleaf.org">
 
 </head>
-<body>
-<div xmlns:th="http://www.thymeleaf.org">
-<div class="newsletter-subscribe mt-5 container">
-    <div class="container">
-        <div class="intro">
-            <h2 class="text-center newsletter">Subscribe to our Newsletter</h2>
-        </div>
-        <form method="POST" th:action='@{/subscribers/unsubscribe}' class="form-inline">
-            <div class="form-group">
-                <input class="form-control" type="email" name="email" placeholder="Your Email">
+
+<main xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <article>
+        <div class="article-header">
+            <div class="headline">
+                <h1>Evangelisch-methodistische Kirche</h1>
+                <div class="byline" >Unsubscribe to our newsletter </div>
+                <div class="article-text push-bot newsletter-subscribe mt-5 text-center">
+                    <form method="POST" th:action='@{/subscribers/unsubscribe}' >
+                        <div class="form-group">
+                            <input class="form-control" type="email" name="email" placeholder="Your Email">
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-light" type="submit">Unsubscribe </button>
+                        </div>
+                        <div th:if="${subscriberEmailError}">
+                            <h2 class="header">You are already unsubscribed</h2>
+                        </div>
+
+                        <div th:if="${email}">
+                            <h2 class="header">We are sad to announce you have unsubscribed</h2>
+                        </div>
+                    </form>
+
+                </div>
             </div>
-            <div class="form-group">
-                <button class="btn btn-primary" type="submit">Unsubscribe </button>
-            </div>
-        </form>
-        <div th:if="${subscriberEmailError}">
-            <h1>You are already unsubscribed</h1>
+            <!--            <div th:style="'background:url(' + ${post.getBase64Image()} + ');'" class="image"></div>-->
+            <div th:style="'background:url(' + @{/images/pic3.jpg} + ');'" class="image"></div>
+
         </div>
 
-        <div th:if="${email}">
-            <h1>We are sad to announce you have unsubscribed</h1>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+    </article>
+</main>
+
+<style>
+.image{
+    grid-row: 1 / -1;
+}
+.push-bot{
+    margin-bottom: 8vw;
+}
+</style>

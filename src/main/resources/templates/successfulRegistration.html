@@ -8,3 +8,32 @@
     <a href="login.html">Login</a>
 </body>
 </html>
+
+<head>
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/readMore.css}" xmlns:th="http://www.thymeleaf.org">
+
+</head>
+
+<main xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <article>
+        <div class="article-header">
+            <div class="headline">
+                <div class="header" th:text="'A verification email has been sent to: ' + ${email}"></div>
+            </div>
+            <div th:style="'background:url(' + @{/images/pic3.jpg} + ');'" class="image">
+            </div>
+            <div>
+                <a class="header" href="login.html">Login</a>
+            </div>
+        </div>
+    </article>
+</main>
+
+<style>
+    .image{
+        grid-row: 1 / -1;
+        height: 50vw;
+    }
+
+</style>

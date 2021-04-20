@@ -1,12 +1,12 @@
 <header xmlns:th="http://www.thymeleaf.org">
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-md navbar-dark nav-dark">
         <div class="container">
             <div>
                 <ul>
                      <li class="home"><a class="navbar-brand" href="/">Markus Kirche</a></li>
-                    <li><a class="navbar-brand" th:href="@{'/getPDF'}">Gemeindebrief</a></li>
-                    <li><a class="navbar-brand" href="Kontakt">Kontakt</a></li>
-                    <li><a class="navbar-brand" href="Über Uns">Über Uns</a></li>
+<!--                    <li><a class="navbar-brand" th:href="@{'/getPDF'}">Gemeindebrief</a></li>-->
+                    <li><a class="navbar-brand" th:href="@{'/Pastoren'}">Unsere Pastoren</a></li>
+                    <li><a class="navbar-brand" th:href="@{'/AboutUs'}">Über Uns</a></li>
                 </ul>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
                     aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,9 +26,11 @@
                     </li>
 
                     <li class="nav-item" >
+                        <th:block th:if="${#request.getRemoteUser() != null}">
                         <a class="btn btn-light btn-sm ml-3" href="/logout">
                             <i class="fa ion-log-out"></i> Logout
                         </a>
+                        </th:block>
                     </li>
                     <li class="nav-item" >
                         <a class="btn btn-light btn-sm ml-3" href="/login">
@@ -42,6 +44,16 @@
 </header>
 
 <style>
+    header{
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 10000000;
+    }
+
+    .nav-dark{
+        background-color: #212529 !important;
+    }
     ul {
         float:right;
         margin: 0px;

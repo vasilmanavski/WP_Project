@@ -3,47 +3,17 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset='utf-8' />
-
-
     <title>
         Initialize Globals Demo - Demos | FullCalendar
     </title>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 
     <link href='/assets/demo-to-codepen.css' rel='stylesheet' />
-
-
-    <style>
-
-        html, body {
-            margin: 0 auto;
-            padding: 0;
-            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
-            font-size: 14px;
-        }
-
-        #calendar {
-            max-width: 700px;
-            margin: 40px auto;
-        }
-
-    </style>
-
-
-
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.5.1/main.min.js'></script>
 
-
-
-
-
-
-
     <script src='/assets/demo-to-codepen.js'></script>
-
-
-
+</head>
     <script th:inline="javascript">
 
        var post =[[${posts}]]
@@ -56,48 +26,55 @@
             let  calendar = new FullCalendar.Calendar(calendarEl, {
 
                 initialView: 'dayGridMonth',
-                //initialDate: '2021-02-07',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
                 events: [],
-
             });
-
-
-
             calendar.render();
 
               post.forEach(function (item){
                   var title = item.title;
                   var shortDescription = item.shortDescription;
-                  var dateCreated = item.dateOfEvent;
-                  var event={ title: title, start:  dateCreated};
-                  calendar.addEvent(event);
-                  console.log(shortDescription)
+                  var dateCreated = item.dateCreated;
+                  var news={ title: title, start:  dateCreated};
+                  calendar.addEvent(news);
 
               });
-
-
-
-
-
         });
-
-        //var post   = [[${posts}]];
-
-
-
     </script>
 
-</head>
+
 <body>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/readMore.css}" xmlns:th="http://www.thymeleaf.org">
+
+</head>
+
+<main xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <article>
+        <div class="article-header">
+            <div class="headline">
+                <h1>Evangelisch-methodistische Kirche</h1>
+                <div class="byline" >Calendar </div>
+                <div class="article-text push-bot newsletter-subscribe mt-5 text-center">
+                    <div id='calendar'></div>
+                    <div id="demo"></div>
+                </div>
+            </div>
+            <div th:style="'background:url(' + @{/images/pic3.jpg} + ');'" class="image"></div>
+
+        </div>
+
+    </article>
+</main>
+</html>
 
 
-<div id='calendar'></div>
-<div id="demo">
 
 </div>
 </body>
@@ -105,3 +82,29 @@
 
 
 </html>
+
+<style>
+
+    html, body {
+        margin: 0 auto;
+        padding: 0;
+        font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+        font-size: 14px;
+    }
+
+    #calendar {
+        max-width: 700px;
+        margin: 40px auto;
+        background-color: beige;
+    }
+    .image{
+        grid-row: 1 / -1;
+    }
+    .push-bot{
+        margin-bottom: 8vw;
+    }
+    .headline{
+        grid-row: 2 / 5;
+    }
+
+</style>

@@ -7,21 +7,54 @@
 </head>
 <body>
     <h1>Add roles</h1>
-    <form th:action="@{/User/Roles}"  th:method="POST">
-        <label for='email'>Email:</label><input id='email' type='text' name='email' required=""/>
-        <label >Name</label>:
-        <select name="role">
-            <option th:each="role: ${roles}"><th:block th:text="${role.name()}" th:value="${role.name()}"/></option>
-        </select>
 
-        <input type='submit' value='Submit'/>
-    </form>
-    <div th:if="${error}">
-        <h1 th:text="${error}"/>
-    </div>
-    <div th:if="${message}">
-        <h1 th:text="${message}"/>
-    </div>
 
 </body>
+<head>
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/readMore.css}" xmlns:th="http://www.thymeleaf.org">
+
+</head>
+
+<main xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+    <article>
+        <div class="article-header">
+            <div class="headline">
+                <h1>Evangelisch-methodistische Kirche</h1>
+                <div class="byline" >Add role to user </div>
+                <div class="article-text push-bot newsletter-subscribe mt-5 text-center">
+                    <form th:action="@{/User/Roles}"  th:method="POST">
+                        <label for='email'>Email:</label><input id='email' type='text' name='email' required=""/>
+                        <label >Name</label>:
+                        <select name="role">
+                            <option th:each="role: ${roles}"><th:block th:text="${role.name()}" th:value="${role.name()}"/></option>
+                        </select>
+
+                        <input type='submit' value='Submit'/>
+                    </form>
+                    <div th:if="${error}">
+                        <h1 th:text="${error}"/>
+                    </div>
+                    <div th:if="${message}">
+                        <h1 th:text="${message}"/>
+                    </div>
+
+                </div>
+            </div>
+            <!--            <div th:style="'background:url(' + ${post.getBase64Image()} + ');'" class="image"></div>-->
+            <div th:style="'background:url(' + @{/images/pic3.jpg} + ');'" class="image"></div>
+
+        </div>
+
+    </article>
+</main>
+
+<style>
+    .image{
+        grid-row: 1 / -1;
+    }
+    .push-bot{
+        margin-bottom: 8vw;
+    }
+</style>
 </html>

@@ -1,13 +1,16 @@
 <head>
     <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/cards-design.css}" xmlns:th="http://www.thymeleaf.org">
+    <link rel="stylesheet" type="text/css" media="screen" th:href="@{/css/cardsStarsPagination.css}" xmlns:th="http://www.thymeleaf.org">
+
 </head>
 
 <div class="container mt-5" xmlns:th="http://www.thymeleaf.org">
-<!--    AUTHORIZATION TO DO-->
+    <th:block sec:authorize="hasAuthority('ROLE_ADMIN')">
     <a href="/posts/add" class="add-item btn btn-dark" >
         Add new post
     </a>
-    <div th:each="post: ${posts}" class="row">
+    </th:block>
+    <div th:each="post, iStat: ${postPage.content}" class="row">
         <div class="col-12">
             <article class="blog-card">
                 <div class="blog-card__background">
@@ -26,9 +29,9 @@
                 <div class="blog-card__info">
                     <h5 th:text="${post.getTitle()}"></h5>
                     <p>
-                        <a href="#" class="icon-link mr-3"><i class="fa fa-pencil-square-o"></i> Tony Jahson</a>
+                        <a th:text="${post.getUser().getEmail()}" href="#" class="icon-link mr-3"><i class="fa fa-pencil-square-o"></i></a>
                     </p>
-                    <p th:text="${post.getDescription()}"></p>
+                    <p th:text="${post.getShortDescription()}"></p>
                     <a th:href="@{'/posts/{id}/readMore' (id=${post.getId()})}" class="btn2 btn--with-icon"><i class="btn-icon fa fa-long-arrow-right"></i>READ MORE</a>
 
                     <form method="POST" th:action="@{'/posts/{id}/review' (id=${post.id})}">
@@ -37,12 +40,9 @@
                                th:value="${#request.getRemoteUser()}" name='email' />
 
                         <div>
-                            <th:block th:if="${#request.getRemoteUser() != null}" >
+                            <th:block sec:authorize="isAuthenticated()" >
                                 <label>Rate post</label><br/>
-<!--                                <select   id="rating" name="rating">-->
-<!--                                    <option  th:each="rate:${rating}" th:text="${rate.name}" th:name="${rate.name}" th:value="${rate.name}" >RATE</option>-->
-<!--                                </select>-->
-                                <div class="rate">
+                                <div class="rate" style="display: inline">
                                     <input type="radio" th:id="'star5' + ${post.getId()}" name="rating" value="MAGNIFICENT" />
                                     <label th:for="'star5' + ${post.getId()}"  title="text">5 stars</label>
                                     <input type="radio" th:id="'star4' + ${post.getId()}"  name="rating" value="EXCELLENT" />
@@ -60,16 +60,27 @@
                     </form>
 
                     <br />
-<!--                    Authorization TO DO-->
+                    <th:block sec:authorize="hasAuthority('ROLE_ADMIN')">
                     <form method="POST" th:action="@{'/posts/{id}/delete' (id=${post.id})}">
                         <button type="submit" class="btn btn-danger delete-item">Delete</button>
                     </form>
+                    </th:block>
+                    <th:block sec:authorize="hasAuthority('ROLE_ADMIN')">
                     <a th:href="@{'/posts/{id}/edit' (id=${post.id})}"class="edit-item btn btn-dark">Edit</a>
-
+                    </th:block>
                 </div>
             </article>
         </div>
     </div>
+    <div class="text-center">
+        <div th:if="${postPage.totalPages > 0}" class="pagination"
+            th:each="pageNumber : ${pageNumbers}" style="display: inline-flex">
+            <a th:href="@{/posts(size=${postPage.size}, page=${pageNumber})}"
+               th:text=${pageNumber}
+               th:class="${pageNumber==postPage.number + 1} ? active"></a>
+        </div>
+    </div>
+
 </div>
 
 

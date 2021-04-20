@@ -136,3 +136,9 @@ i2 {
     text-decoration: none;
     color: #414141;
 }
+
+@media (max-width: 800px) {
+    body-social-networks {
+        display: none;
+    }
+}
