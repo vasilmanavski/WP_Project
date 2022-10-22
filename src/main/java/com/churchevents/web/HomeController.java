@@ -19,4 +19,16 @@ public class HomeController {
         return "master-template";
     }
 
+
+    @GetMapping("/Impressum")
+    public String getImpressum(Model model){
+        model.addAttribute("bodyContent", "impressum");
+        return "master-template";
+    }
+
+    @GetMapping("/Kontakt")
+    public String getContact(Model model){
+        model.addAttribute("bodyContent", "kontakt");
+        return "master-template";
+    }
 }
